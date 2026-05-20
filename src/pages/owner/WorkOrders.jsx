@@ -65,7 +65,7 @@ function NewOrderForm({ onSave, onCancel, loading }) {
         min="0"
         step="0.01"
         value={form.labor_cost}
-        onChange={set('labor_cost')}
+        onChange={setField('labor_cost')}
         placeholder="0.00"
       />
       <div className="flex gap-2 pt-1">
