@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bike } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
@@ -6,8 +6,14 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 
 export default function Login() {
-  const { login, register } = useAuth()
+  const { login, register, user, profile, loading: authLoading } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate(profile?.role === 'owner' ? '/owner/dashboard' : '/my-bikes', { replace: true })
+    }
+  }, [user, profile, authLoading])
   const [mode, setMode] = useState('login')
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [error, setError] = useState('')

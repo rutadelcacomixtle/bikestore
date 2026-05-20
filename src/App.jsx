@@ -11,6 +11,21 @@ import WorkOrders from '@/pages/owner/WorkOrders'
 import WorkOrderDetail from '@/pages/owner/WorkOrderDetail'
 import Products from '@/pages/owner/Products'
 import MyBikes from '@/pages/customer/MyBikes'
+import { useAuth } from '@/hooks/useAuth'
+
+function RootRedirect() {
+  const { user, profile, loading } = useAuth()
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700" />
+      </div>
+    )
+  }
+  if (!user) return <Navigate to="/login" replace />
+  if (profile?.role === 'owner') return <Navigate to="/owner/dashboard" replace />
+  return <Navigate to="/my-bikes" replace />
+}
 
 export default function App() {
   return (
@@ -50,9 +65,9 @@ export default function App() {
             <Route index element={<MyBikes />} />
           </Route>
 
-          {/* Redireccion raíz */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          {/* Redirección raíz — espera auth antes de decidir */}
+          <Route path="/" element={<RootRedirect />} />
+          <Route path="*" element={<RootRedirect />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
