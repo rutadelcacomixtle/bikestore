@@ -302,16 +302,13 @@ export default function WorkOrderDetail() {
           <Select
             label="Producto"
             value={selectedProduct}
-            onChange={(e) => setSelectedProduct(e.target.value)}
-            required
-          >
-            <option value="">Selecciona un producto</option>
-            {products.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} — ${p.price.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-              </option>
-            ))}
-          </Select>
+            onChange={setSelectedProduct}
+            placeholder="Selecciona un producto"
+            options={products.map((p) => ({
+              value: p.id,
+              label: `${p.name} — $${p.price.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`,
+            }))}
+          />
           <Input
             label="Cantidad"
             type="number"
@@ -340,11 +337,12 @@ export default function WorkOrderDetail() {
               ${total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
             </span>
           </p>
-          <Select label="Método de pago" value={payMethod} onChange={(e) => setPayMethod(e.target.value)}>
-            {PAYMENT_METHODS.map((m) => (
-              <option key={m.value} value={m.value}>{m.label}</option>
-            ))}
-          </Select>
+          <Select
+            label="Método de pago"
+            value={payMethod}
+            onChange={setPayMethod}
+            options={PAYMENT_METHODS}
+          />
           <div className="flex gap-2">
             <Button type="button" variant="secondary" onClick={() => setPayModal(false)} className="flex-1">
               Cancelar
@@ -381,12 +379,9 @@ export default function WorkOrderDetail() {
           <Select
             label="Estado"
             value={editForm.status ?? ''}
-            onChange={(e) => setEditForm((f) => ({ ...f, status: e.target.value }))}
-          >
-            {STATUS_FLOW.map((s) => (
-              <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-            ))}
-          </Select>
+            onChange={(val) => setEditForm((f) => ({ ...f, status: val }))}
+            options={STATUS_FLOW.map((s) => ({ value: s, label: STATUS_LABELS[s] }))}
+          />
           <div className="flex gap-2">
             <Button type="button" variant="secondary" onClick={() => setEditModal(false)} className="flex-1">
               Cancelar

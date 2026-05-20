@@ -35,33 +35,30 @@ function NewOrderForm({ onSave, onCancel, loading }) {
     bicycleService.listByCustomer(form.customer_id).then(setBikes)
   }, [form.customer_id])
 
-  const set = (f) => (e) => setForm((p) => ({ ...p, [f]: e.target.value }))
+  const setField = (f) => (e) => setForm((p) => ({ ...p, [f]: e.target.value }))
 
   return (
     <form
       className="flex flex-col gap-3"
       onSubmit={(e) => { e.preventDefault(); onSave(form) }}
     >
-      <Select label="Cliente" value={form.customer_id} onChange={set('customer_id')} required>
-        <option value="">Selecciona un cliente</option>
-        {customers.map((c) => (
-          <option key={c.id} value={c.id}>{c.full_name}</option>
-        ))}
-      </Select>
+      <Select
+        label="Cliente"
+        value={form.customer_id}
+        onChange={(val) => setForm((p) => ({ ...p, customer_id: val }))}
+        placeholder="Selecciona un cliente"
+        options={customers.map((c) => ({ value: c.id, label: c.full_name }))}
+      />
       <Select
         label="Bicicleta"
         value={form.bicycle_id}
-        onChange={set('bicycle_id')}
-        required
+        onChange={(val) => setForm((p) => ({ ...p, bicycle_id: val }))}
+        placeholder="Selecciona una bici"
+        options={bikes.map((b) => ({ value: b.id, label: `${b.brand} ${b.model}` }))}
         disabled={!form.customer_id}
-      >
-        <option value="">Selecciona una bici</option>
-        {bikes.map((b) => (
-          <option key={b.id} value={b.id}>{b.brand} {b.model}</option>
-        ))}
-      </Select>
-      <Textarea label="Descripción del trabajo" value={form.description} onChange={set('description')} required />
-      <Textarea label="Diagnóstico" value={form.diagnosis} onChange={set('diagnosis')} />
+      />
+      <Textarea label="Descripción del trabajo" value={form.description} onChange={setField('description')} required />
+      <Textarea label="Diagnóstico" value={form.diagnosis} onChange={setField('diagnosis')} />
       <Input
         label="Costo de mano de obra ($)"
         type="number"
@@ -135,16 +132,13 @@ export default function WorkOrders() {
       </div>
 
       <div className="flex items-center gap-2 mb-4">
-        <Filter size={14} className="text-gray-400" />
-        <select
+        <Filter size={14} className="text-gray-400 shrink-0" />
+        <Select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500"
-        >
-          {STATUS_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
+          onChange={setStatusFilter}
+          options={STATUS_OPTIONS}
+          className="flex-1"
+        />
       </div>
 
       {loading ? (

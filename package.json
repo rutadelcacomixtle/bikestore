@@ -10,6 +10,7 @@
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.10",
     "@react-pdf/renderer": "^4.1.6",
     "@supabase/supabase-js": "^2.105.4",
     "lucide-react": "^0.511.0",
