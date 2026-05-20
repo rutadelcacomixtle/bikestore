@@ -42,14 +42,15 @@ export function AuthProvider({ children }) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: name } },
+      options: {
+        data: { full_name: name },
+        emailRedirectTo: `${window.location.origin}/login`,
+      },
     })
     if (error) throw error
-    // El trigger crea el profile automáticamente; lo obtenemos
-    const p = await profileService.get(data.user.id)
-    setUser(data.user)
-    setProfile(p)
-    return { user: data.user, profile: p }
+    // Si Supabase requiere confirmación, identities viene vacío o sin email_confirmed_at
+    const needsConfirmation = !data.session
+    return { user: data.user, profile: null, needsConfirmation }
   }
 
   const logout = async () => {

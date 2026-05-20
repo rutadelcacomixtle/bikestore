@@ -12,6 +12,7 @@ export default function Login() {
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
 
@@ -20,18 +21,47 @@ export default function Login() {
     setError('')
     setLoading(true)
     try {
-      let profile
       if (mode === 'login') {
-        ;({ profile } = await login(form.email, form.password))
+        const { profile } = await login(form.email, form.password)
+        navigate(profile?.role === 'owner' ? '/owner/dashboard' : '/my-bikes', { replace: true })
       } else {
-        ;({ profile } = await register(form.email, form.password, form.name))
+        const { needsConfirmation } = await register(form.email, form.password, form.name)
+        if (needsConfirmation) {
+          setEmailSent(true)
+        } else {
+          navigate('/my-bikes', { replace: true })
+        }
       }
-      navigate(profile?.role === 'owner' ? '/owner/dashboard' : '/my-bikes', { replace: true })
     } catch (err) {
       setError(err.message ?? 'Ocurrió un error. Intenta de nuevo.')
     } finally {
       setLoading(false)
     }
+  }
+
+  if (emailSent) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center">
+          <div className="flex flex-col items-center mb-4">
+            <div className="bg-blue-700 text-white rounded-xl p-3 mb-3">
+              <Bike size={28} />
+            </div>
+            <h1 className="text-xl font-bold text-gray-900">Revisa tu correo</h1>
+          </div>
+          <p className="text-gray-600 text-sm mb-4">
+            Te enviamos un enlace de confirmación a <strong>{form.email}</strong>.
+            Ábrelo para activar tu cuenta.
+          </p>
+          <button
+            onClick={() => { setEmailSent(false); setMode('login') }}
+            className="text-sm text-blue-700 underline"
+          >
+            Volver al inicio de sesión
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
