@@ -47,6 +47,9 @@ export default function WorkOrderDetail() {
   const [qty, setQty] = useState(1)
   const [payMethod, setPayMethod] = useState('cash')
   const [editForm, setEditForm] = useState({})
+  const [inlineProduct, setInlineProduct] = useState(false)
+  const [newProductData, setNewProductData] = useState({ name: '', price: '', stock: '0' })
+  const [inlineSaving, setInlineSaving] = useState(false)
 
   const load = async () => {
     try {
@@ -103,6 +106,28 @@ export default function WorkOrderDetail() {
       await load()
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleSaveInlineProduct = async () => {
+    if (!newProductData.name.trim() || !newProductData.price) return
+    setInlineSaving(true)
+    try {
+      const created = await productService.create({
+        name:   newProductData.name.trim(),
+        price:  parseFloat(newProductData.price),
+        stock:  parseInt(newProductData.stock) || 0,
+        active: true,
+        unit:   'pieza',
+      })
+      setProducts((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name, 'es')))
+      setSelectedProduct(created.id)
+      setInlineProduct(false)
+      setNewProductData({ name: '', price: '', stock: '0' })
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setInlineSaving(false)
     }
   }
 
@@ -310,7 +335,11 @@ export default function WorkOrderDetail() {
       </div>
 
       {/* Add Product Modal */}
-      <Modal open={addProductModal} onClose={() => setAddProductModal(false)} title="Agregar producto">
+      <Modal
+        open={addProductModal}
+        onClose={() => { setAddProductModal(false); setInlineProduct(false) }}
+        title="Agregar producto"
+      >
         <form onSubmit={handleAddProduct} className="flex flex-col gap-3">
           <Select
             label="Producto"
@@ -322,6 +351,54 @@ export default function WorkOrderDetail() {
               label: `${p.name} — $${p.price.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`,
             }))}
           />
+
+          {/* Alta rápida de producto */}
+          {!inlineProduct && (
+            <button
+              type="button"
+              onClick={() => setInlineProduct(true)}
+              className="text-sm text-blue-600 hover:text-blue-800 text-left -mt-1"
+            >
+              + Crear nuevo producto
+            </button>
+          )}
+          {inlineProduct && (
+            <div className="rounded-xl border border-blue-100 bg-blue-50 p-3 flex flex-col gap-2">
+              <p className="text-xs font-semibold text-blue-700">Nuevo producto</p>
+              <Input
+                placeholder="Nombre *"
+                value={newProductData.name}
+                onChange={(e) => setNewProductData((p) => ({ ...p, name: e.target.value }))}
+                autoFocus
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  placeholder="Precio *"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={newProductData.price}
+                  onChange={(e) => setNewProductData((p) => ({ ...p, price: e.target.value }))}
+                />
+                <Input
+                  placeholder="Stock"
+                  type="number"
+                  min="0"
+                  value={newProductData.stock}
+                  onChange={(e) => setNewProductData((p) => ({ ...p, stock: e.target.value }))}
+                />
+              </div>
+              <div className="flex gap-2 pt-0.5">
+                <Button type="button" variant="secondary" size="sm" onClick={() => setInlineProduct(false)} className="flex-1">
+                  Cancelar
+                </Button>
+                <Button type="button" size="sm" loading={inlineSaving} onClick={handleSaveInlineProduct} className="flex-1">
+                  Guardar
+                </Button>
+              </div>
+            </div>
+          )}
+
           <Input
             label="Cantidad"
             type="number"
@@ -331,7 +408,7 @@ export default function WorkOrderDetail() {
             required
           />
           <div className="flex gap-2">
-            <Button type="button" variant="secondary" onClick={() => setAddProductModal(false)} className="flex-1">
+            <Button type="button" variant="secondary" onClick={() => { setAddProductModal(false); setInlineProduct(false) }} className="flex-1">
               Cancelar
             </Button>
             <Button type="submit" loading={saving} className="flex-1">
