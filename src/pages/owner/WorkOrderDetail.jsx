@@ -6,6 +6,7 @@ import {
   workOrderService,
   workOrderProductService,
   productService,
+  categoryService,
   profileService,
   contactService,
   bicycleService,
@@ -38,6 +39,7 @@ export default function WorkOrderDetail() {
   const [person, setPerson] = useState(null)   // profile or contact
   const [bicycle, setBicycle] = useState(null)
   const [products, setProducts] = useState([])
+  const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [addProductModal, setAddProductModal] = useState(false)
@@ -48,7 +50,7 @@ export default function WorkOrderDetail() {
   const [payMethod, setPayMethod] = useState('cash')
   const [editForm, setEditForm] = useState({})
   const [inlineProduct, setInlineProduct] = useState(false)
-  const [newProductData, setNewProductData] = useState({ name: '', price: '', stock: '0' })
+  const [newProductData, setNewProductData] = useState({ name: '', price: '', stock: '0', category_id: '' })
   const [inlineSaving, setInlineSaving] = useState(false)
 
   const load = async () => {
@@ -73,16 +75,18 @@ export default function WorkOrderDetail() {
         ? bicycleService.listByCustomer(o.customer_id)
         : Promise.resolve([])
 
-      const [ops, p, bikes, prods] = await Promise.all([
+      const [ops, p, bikes, prods, cats] = await Promise.all([
         workOrderProductService.listByOrder(id),
         personPromise,
         bikesPromise,
         productService.list(true),
+        categoryService.list(),
       ])
       setOrderProducts(ops)
       setPerson(p)
       setBicycle(bikes.find((b) => b.id === o.bicycle_id) ?? null)
       setProducts(prods)
+      setCategories(cats)
     } catch (err) {
       console.error(err)
     } finally {
@@ -114,16 +118,17 @@ export default function WorkOrderDetail() {
     setInlineSaving(true)
     try {
       const created = await productService.create({
-        name:   newProductData.name.trim(),
-        price:  parseFloat(newProductData.price),
-        stock:  parseInt(newProductData.stock) || 0,
-        active: true,
-        unit:   'pieza',
+        name:        newProductData.name.trim(),
+        price:       parseFloat(newProductData.price),
+        stock:       parseInt(newProductData.stock) || 0,
+        category_id: newProductData.category_id || null,
+        active:      true,
+        unit:        'pieza',
       })
       setProducts((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name, 'es')))
       setSelectedProduct(created.id)
       setInlineProduct(false)
-      setNewProductData({ name: '', price: '', stock: '0' })
+      setNewProductData({ name: '', price: '', stock: '0', category_id: '' })
     } catch (err) {
       console.error(err)
     } finally {
@@ -370,6 +375,12 @@ export default function WorkOrderDetail() {
                 value={newProductData.name}
                 onChange={(e) => setNewProductData((p) => ({ ...p, name: e.target.value }))}
                 autoFocus
+              />
+              <Select
+                value={newProductData.category_id}
+                onChange={(v) => setNewProductData((p) => ({ ...p, category_id: v }))}
+                options={categories.map((c) => ({ value: c.id, label: c.name }))}
+                placeholder="Categoría (opcional)"
               />
               <div className="grid grid-cols-2 gap-2">
                 <Input
