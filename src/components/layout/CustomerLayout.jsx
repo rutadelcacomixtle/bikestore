@@ -17,7 +17,7 @@ export function CustomerLayout() {
         <span className="font-bold text-blue-700">CharlsBikes</span>
         <div className="flex items-center gap-3">
           <span className="text-xs text-gray-500 truncate max-w-[120px]">
-            {profile?.fullName}
+            {profile?.full_name}
           </span>
           <button
             onClick={handleLogout}

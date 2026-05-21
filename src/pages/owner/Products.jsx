@@ -110,13 +110,13 @@ function CategoryManager({ categories, products, onRefresh }) {
               <div className="flex items-center gap-1 shrink-0">
                 <button
                   onClick={() => setEditTarget(cat)}
-                  className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors"
+                  className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors"
                 >
                   <Pencil size={14} />
                 </button>
                 <button
                   onClick={() => handleDelete(cat)}
-                  className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                  className="p-2 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -408,19 +408,19 @@ export default function Products() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => handleToggle(p)}
-                      className={`p-1.5 rounded-lg transition-colors ${p.active ? 'text-green-600 hover:bg-green-50' : 'text-gray-300 hover:bg-gray-100'}`}
+                      className={`p-2 rounded-lg transition-colors ${p.active ? 'text-green-600 hover:bg-green-50' : 'text-gray-300 hover:bg-gray-100'}`}
                     >
                       {p.active ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
                     </button>
                     <button
                       onClick={() => openEdit(p)}
-                      className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors"
+                      className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors"
                     >
                       <Pencil size={15} />
                     </button>
                     <button
                       onClick={() => handleDelete(p.id)}
-                      className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                      className="p-2 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
                     >
                       <Trash2 size={15} />
                     </button>

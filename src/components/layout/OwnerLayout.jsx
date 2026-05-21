@@ -55,17 +55,17 @@ export function OwnerLayout() {
       <header className="sm:hidden flex items-center justify-between bg-white border-b border-gray-200 px-4 h-12 shrink-0">
         <span className="font-bold text-blue-700">CharlsBikes</span>
         <span className="text-xs text-gray-500 truncate max-w-[140px]">
-          {profile?.fullName}
+          {profile?.full_name}
         </span>
       </header>
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto pb-20 sm:pb-6">
+      <main className="flex-1 overflow-y-auto pb-24 sm:pb-6">
         <Outlet />
       </main>
 
       {/* Bottom nav mobile */}
-      <nav className="sm:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 flex safe-bottom">
+      <nav className="sm:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 flex" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {navItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}

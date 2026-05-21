@@ -152,7 +152,7 @@ function QuickSaleModal({ products, customers, onSave, onCancel, loading }) {
       )}
 
       {/* Pago y cliente */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Select
           label="Método de pago"
           value={paymentMethod}

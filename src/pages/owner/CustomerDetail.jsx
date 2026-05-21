@@ -108,7 +108,7 @@ export default function CustomerDetail() {
     <div className="px-4 py-6 max-w-2xl mx-auto">
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-1.5 text-sm text-gray-500 mb-4 hover:text-gray-700"
+        className="flex items-center gap-1.5 text-sm text-gray-500 mb-4 hover:text-gray-700 -ml-1 py-1 px-1 rounded-lg"
       >
         <ArrowLeft size={16} /> Volver
       </button>
@@ -148,7 +148,7 @@ export default function CustomerDetail() {
                   </div>
                   <button
                     onClick={() => handleDeleteBike(b.id)}
-                    className="text-gray-300 hover:text-red-500 transition-colors"
+                    className="p-2 -mr-2 rounded-lg text-gray-300 hover:text-red-500 transition-colors"
                   >
                     <Trash2 size={16} />
                   </button>
