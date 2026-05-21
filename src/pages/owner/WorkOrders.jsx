@@ -17,8 +17,25 @@ const STATUS_OPTIONS = [
   { value: 'delivered', label: 'Entregada' },
 ]
 
+function InlineForm({ title, children, onCancel, onSave, saving }) {
+  return (
+    <div className="rounded-xl border border-blue-100 bg-blue-50 p-3 flex flex-col gap-2">
+      <p className="text-xs font-semibold text-blue-700">{title}</p>
+      {children}
+      <div className="flex gap-2 pt-0.5">
+        <Button type="button" variant="secondary" size="sm" onClick={onCancel} className="flex-1">
+          Cancelar
+        </Button>
+        <Button type="button" size="sm" loading={saving} onClick={onSave} className="flex-1">
+          Guardar
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 function NewOrderForm({ onSave, onCancel, loading }) {
-  const [customerType, setCustomerType] = useState('profile') // 'profile' | 'contact'
+  const [customerType, setCustomerType] = useState('profile')
   const [profiles, setProfiles] = useState([])
   const [contacts, setContacts] = useState([])
   const [bikes, setBikes] = useState([])
@@ -30,6 +47,12 @@ function NewOrderForm({ onSave, onCancel, loading }) {
     diagnosis:   '',
     labor_cost:  '',
   })
+
+  // inline creation
+  const [inlineForm, setInlineForm] = useState(null) // null | 'contact' | 'bike'
+  const [newContact, setNewContact] = useState({ full_name: '', phone: '' })
+  const [newBike, setNewBike]       = useState({ brand: '', model: '' })
+  const [inlineSaving, setInlineSaving] = useState(false)
 
   useEffect(() => {
     profileService.list().then(setProfiles)
@@ -47,6 +70,52 @@ function NewOrderForm({ onSave, onCancel, loading }) {
   }, [customerType, form.customer_id, form.contact_id])
 
   const setField = (f) => (e) => setForm((p) => ({ ...p, [f]: e.target.value }))
+
+  const switchType = (val) => {
+    setCustomerType(val)
+    setInlineForm(null)
+    setForm((p) => ({ ...p, customer_id: '', contact_id: '', bicycle_id: '' }))
+  }
+
+  const handleSaveContact = async () => {
+    if (!newContact.full_name.trim()) return
+    setInlineSaving(true)
+    try {
+      const contact = await contactService.create({
+        full_name: newContact.full_name.trim(),
+        phone:     newContact.phone || null,
+      })
+      setContacts((prev) =>
+        [...prev, contact].sort((a, b) => a.full_name.localeCompare(b.full_name, 'es'))
+      )
+      setForm((p) => ({ ...p, contact_id: contact.id }))
+      setInlineForm(null)
+      setNewContact({ full_name: '', phone: '' })
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setInlineSaving(false)
+    }
+  }
+
+  const handleSaveBike = async () => {
+    if (!newBike.brand.trim() || !newBike.model.trim()) return
+    setInlineSaving(true)
+    try {
+      const payload = customerType === 'contact'
+        ? { ...newBike, contact_id: form.contact_id }
+        : { ...newBike, customer_id: form.customer_id }
+      const bike = await bicycleService.create(payload)
+      setBikes((prev) => [...prev, bike])
+      setForm((p) => ({ ...p, bicycle_id: bike.id }))
+      setInlineForm(null)
+      setNewBike({ brand: '', model: '' })
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setInlineSaving(false)
+    }
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -76,10 +145,7 @@ function NewOrderForm({ onSave, onCancel, loading }) {
             <button
               key={val}
               type="button"
-              onClick={() => {
-                setCustomerType(val)
-                setForm((p) => ({ ...p, customer_id: '', contact_id: '', bicycle_id: '' }))
-              }}
+              onClick={() => switchType(val)}
               className={`flex-1 py-2 text-center transition-colors font-medium ${
                 customerType === val
                   ? 'bg-blue-600 text-white'
@@ -111,7 +177,39 @@ function NewOrderForm({ onSave, onCancel, loading }) {
         />
       )}
 
-      {/* Bicicleta */}
+      {/* Alta rápida de contacto (solo tipo Del taller) */}
+      {customerType === 'contact' && inlineForm !== 'contact' && (
+        <button
+          type="button"
+          onClick={() => setInlineForm('contact')}
+          className="text-sm text-blue-600 hover:text-blue-800 text-left -mt-1"
+        >
+          + Crear nuevo contacto
+        </button>
+      )}
+      {inlineForm === 'contact' && (
+        <InlineForm
+          title="Nuevo contacto"
+          onCancel={() => setInlineForm(null)}
+          onSave={handleSaveContact}
+          saving={inlineSaving}
+        >
+          <Input
+            placeholder="Nombre completo *"
+            value={newContact.full_name}
+            onChange={(e) => setNewContact((p) => ({ ...p, full_name: e.target.value }))}
+            autoFocus
+          />
+          <Input
+            placeholder="Teléfono"
+            type="tel"
+            value={newContact.phone}
+            onChange={(e) => setNewContact((p) => ({ ...p, phone: e.target.value }))}
+          />
+        </InlineForm>
+      )}
+
+      {/* Selector de bicicleta */}
       <Select
         label="Bicicleta"
         value={form.bicycle_id}
@@ -120,6 +218,39 @@ function NewOrderForm({ onSave, onCancel, loading }) {
         options={bikes.map((b) => ({ value: b.id, label: `${b.brand} ${b.model}` }))}
         disabled={!selectedId}
       />
+
+      {/* Alta rápida de bicicleta */}
+      {selectedId && inlineForm !== 'bike' && (
+        <button
+          type="button"
+          onClick={() => setInlineForm('bike')}
+          className="text-sm text-blue-600 hover:text-blue-800 text-left -mt-1"
+        >
+          + Agregar bicicleta
+        </button>
+      )}
+      {inlineForm === 'bike' && (
+        <InlineForm
+          title="Nueva bicicleta"
+          onCancel={() => setInlineForm(null)}
+          onSave={handleSaveBike}
+          saving={inlineSaving}
+        >
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              placeholder="Marca *"
+              value={newBike.brand}
+              onChange={(e) => setNewBike((p) => ({ ...p, brand: e.target.value }))}
+              autoFocus
+            />
+            <Input
+              placeholder="Modelo *"
+              value={newBike.model}
+              onChange={(e) => setNewBike((p) => ({ ...p, model: e.target.value }))}
+            />
+          </div>
+        </InlineForm>
+      )}
 
       <Textarea label="Descripción del trabajo" value={form.description} onChange={setField('description')} required />
       <Textarea label="Diagnóstico" value={form.diagnosis} onChange={setField('diagnosis')} />

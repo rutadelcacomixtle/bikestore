@@ -337,15 +337,13 @@ export default function Products() {
         />
       </div>
 
-      {/* Chips de categoría */}
+      {/* Grid de categorías */}
       {categories.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: 'none' }}>
+        <div className="grid grid-cols-2 gap-2 mb-4">
           <button
             onClick={() => setFilterCategory('')}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-              !filterCategory
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            className={`py-3 px-2 rounded-xl text-sm font-medium text-center leading-tight transition-colors ${
+              !filterCategory ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
             Todos
@@ -354,10 +352,8 @@ export default function Products() {
             <button
               key={cat.id}
               onClick={() => setFilterCategory(cat.id === filterCategory ? '' : cat.id)}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                filterCategory === cat.id
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              className={`py-3 px-2 rounded-xl text-sm font-medium text-center leading-tight transition-colors ${
+                filterCategory === cat.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
               {cat.name}
