@@ -10,6 +10,8 @@ import CustomerDetail from '@/pages/owner/CustomerDetail'
 import WorkOrders from '@/pages/owner/WorkOrders'
 import WorkOrderDetail from '@/pages/owner/WorkOrderDetail'
 import Products from '@/pages/owner/Products'
+import Sales from '@/pages/owner/Sales'
+import ContactDetail from '@/pages/owner/ContactDetail'
 import MyBikes from '@/pages/customer/MyBikes'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -48,9 +50,11 @@ export default function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="customers" element={<Customers />} />
             <Route path="customers/:id" element={<CustomerDetail />} />
+            <Route path="contacts/:id"  element={<ContactDetail />} />
             <Route path="work-orders" element={<WorkOrders />} />
             <Route path="work-orders/:id" element={<WorkOrderDetail />} />
             <Route path="products" element={<Products />} />
+            <Route path="sales"    element={<Sales />} />
           </Route>
 
           {/* Customer */}

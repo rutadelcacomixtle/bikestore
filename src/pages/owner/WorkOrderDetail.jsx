@@ -7,6 +7,7 @@ import {
   workOrderProductService,
   productService,
   profileService,
+  contactService,
   bicycleService,
 } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
@@ -34,7 +35,7 @@ export default function WorkOrderDetail() {
   const navigate = useNavigate()
   const [order, setOrder] = useState(null)
   const [orderProducts, setOrderProducts] = useState([])
-  const [profile, setProfile] = useState(null)
+  const [person, setPerson] = useState(null)   // profile or contact
   const [bicycle, setBicycle] = useState(null)
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -57,14 +58,26 @@ export default function WorkOrderDetail() {
         labor_cost: o.labor_cost ?? 0,
         status: o.status,
       })
+      const personPromise = o.contact_id
+        ? contactService.get(o.contact_id)
+        : o.customer_id
+        ? profileService.get(o.customer_id)
+        : Promise.resolve(null)
+
+      const bikesPromise = o.contact_id
+        ? bicycleService.listByContact(o.contact_id)
+        : o.customer_id
+        ? bicycleService.listByCustomer(o.customer_id)
+        : Promise.resolve([])
+
       const [ops, p, bikes, prods] = await Promise.all([
         workOrderProductService.listByOrder(id),
-        profileService.get(o.customer_id),
-        bicycleService.listByCustomer(o.customer_id),
+        personPromise,
+        bikesPromise,
         productService.list(true),
       ])
       setOrderProducts(ops)
-      setProfile(p)
+      setPerson(p)
       setBicycle(bikes.find((b) => b.id === o.bicycle_id) ?? null)
       setProducts(prods)
     } catch (err) {
@@ -190,7 +203,7 @@ export default function WorkOrderDetail() {
         <CardBody className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
           <div>
             <p className="text-xs text-gray-400">Cliente</p>
-            <p className="font-medium text-gray-800">{profile?.full_name ?? '—'}</p>
+            <p className="font-medium text-gray-800">{person?.full_name ?? '—'}</p>
           </div>
           <div>
             <p className="text-xs text-gray-400">Bicicleta</p>
@@ -284,7 +297,7 @@ export default function WorkOrderDetail() {
           </Button>
         )}
         <PDFDownloadLink
-          document={<ReceiptPDF order={order} profile={profile} bicycle={bicycle} orderProducts={orderProducts} total={total} />}
+          document={<ReceiptPDF order={order} profile={person} bicycle={bicycle} orderProducts={orderProducts} total={total} />}
           fileName={`recibo-${id.slice(0, 8)}.pdf`}
         >
           {({ loading: pdfLoading }) => (

@@ -1,12 +1,13 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Users, ClipboardList, Package, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, ClipboardList, Package, ShoppingCart, LogOut } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 
 const navItems = [
-  { to: '/owner/dashboard',    icon: LayoutDashboard, label: 'Inicio' },
-  { to: '/owner/customers',    icon: Users,            label: 'Clientes' },
-  { to: '/owner/work-orders',  icon: ClipboardList,    label: 'Órdenes' },
-  { to: '/owner/products',     icon: Package,          label: 'Productos' },
+  { to: '/owner/dashboard',   icon: LayoutDashboard, label: 'Inicio'    },
+  { to: '/owner/customers',   icon: Users,            label: 'Clientes'  },
+  { to: '/owner/work-orders', icon: ClipboardList,    label: 'Órdenes'   },
+  { to: '/owner/products',    icon: Package,          label: 'Productos' },
+  { to: '/owner/sales',       icon: ShoppingCart,     label: 'Ventas'    },
 ]
 
 export function OwnerLayout() {

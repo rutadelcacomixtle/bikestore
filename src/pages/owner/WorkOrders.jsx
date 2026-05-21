@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Plus, ClipboardList, ChevronRight, Filter } from 'lucide-react'
-import { workOrderService, profileService, bicycleService } from '@/lib/supabase'
+import { workOrderService, profileService, contactService, bicycleService } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 import { Select, Textarea } from '@/components/ui/Input'
 import { Input } from '@/components/ui/Input'
@@ -18,45 +18,109 @@ const STATUS_OPTIONS = [
 ]
 
 function NewOrderForm({ onSave, onCancel, loading }) {
-  const [customers, setCustomers] = useState([])
+  const [customerType, setCustomerType] = useState('profile') // 'profile' | 'contact'
+  const [profiles, setProfiles] = useState([])
+  const [contacts, setContacts] = useState([])
   const [bikes, setBikes] = useState([])
   const [form, setForm] = useState({
     customer_id: '',
-    bicycle_id: '',
+    contact_id:  '',
+    bicycle_id:  '',
     description: '',
-    diagnosis: '',
-    labor_cost: '',
+    diagnosis:   '',
+    labor_cost:  '',
   })
 
-  useEffect(() => { profileService.list().then(setCustomers) }, [])
+  useEffect(() => {
+    profileService.list().then(setProfiles)
+    contactService.list().then(setContacts)
+  }, [])
 
   useEffect(() => {
-    if (!form.customer_id) { setBikes([]); return }
-    bicycleService.listByCustomer(form.customer_id).then(setBikes)
-  }, [form.customer_id])
+    setBikes([])
+    setForm((p) => ({ ...p, bicycle_id: '' }))
+    if (customerType === 'profile' && form.customer_id) {
+      bicycleService.listByCustomer(form.customer_id).then(setBikes)
+    } else if (customerType === 'contact' && form.contact_id) {
+      bicycleService.listByContact(form.contact_id).then(setBikes)
+    }
+  }, [customerType, form.customer_id, form.contact_id])
 
   const setField = (f) => (e) => setForm((p) => ({ ...p, [f]: e.target.value }))
 
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    onSave({
+      customer_id: customerType === 'profile' ? form.customer_id : null,
+      contact_id:  customerType === 'contact'  ? form.contact_id  : null,
+      bicycle_id:  form.bicycle_id || null,
+      description: form.description,
+      diagnosis:   form.diagnosis,
+      labor_cost:  form.labor_cost,
+    })
+  }
+
+  const selectedId = customerType === 'profile' ? form.customer_id : form.contact_id
+
   return (
-    <form
-      className="flex flex-col gap-3"
-      onSubmit={(e) => { e.preventDefault(); onSave(form) }}
-    >
-      <Select
-        label="Cliente"
-        value={form.customer_id}
-        onChange={(val) => setForm((p) => ({ ...p, customer_id: val }))}
-        placeholder="Selecciona un cliente"
-        options={customers.map((c) => ({ value: c.id, label: c.full_name }))}
-      />
+    <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+
+      {/* Toggle tipo de cliente */}
+      <div>
+        <p className="text-sm font-medium text-gray-700 mb-1.5">Tipo de cliente</p>
+        <div className="flex rounded-lg border border-gray-200 overflow-hidden text-sm">
+          {[
+            { val: 'profile', label: 'Registrado' },
+            { val: 'contact', label: 'Del taller' },
+          ].map(({ val, label }) => (
+            <button
+              key={val}
+              type="button"
+              onClick={() => {
+                setCustomerType(val)
+                setForm((p) => ({ ...p, customer_id: '', contact_id: '', bicycle_id: '' }))
+              }}
+              className={`flex-1 py-2 text-center transition-colors font-medium ${
+                customerType === val
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-500 hover:bg-gray-50'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Selector de cliente */}
+      {customerType === 'profile' ? (
+        <Select
+          label="Cliente"
+          value={form.customer_id}
+          onChange={(val) => setForm((p) => ({ ...p, customer_id: val }))}
+          placeholder="Selecciona un cliente"
+          options={profiles.map((c) => ({ value: c.id, label: c.full_name }))}
+        />
+      ) : (
+        <Select
+          label="Contacto"
+          value={form.contact_id}
+          onChange={(val) => setForm((p) => ({ ...p, contact_id: val }))}
+          placeholder="Selecciona un contacto"
+          options={contacts.map((c) => ({ value: c.id, label: c.full_name }))}
+        />
+      )}
+
+      {/* Bicicleta */}
       <Select
         label="Bicicleta"
         value={form.bicycle_id}
         onChange={(val) => setForm((p) => ({ ...p, bicycle_id: val }))}
-        placeholder="Selecciona una bici"
+        placeholder={selectedId ? 'Selecciona una bici (opcional)' : 'Primero selecciona un cliente'}
         options={bikes.map((b) => ({ value: b.id, label: `${b.brand} ${b.model}` }))}
-        disabled={!form.customer_id}
+        disabled={!selectedId}
       />
+
       <Textarea label="Descripción del trabajo" value={form.description} onChange={setField('description')} required />
       <Textarea label="Diagnóstico" value={form.diagnosis} onChange={setField('diagnosis')} />
       <Input
@@ -69,12 +133,8 @@ function NewOrderForm({ onSave, onCancel, loading }) {
         placeholder="0.00"
       />
       <div className="flex gap-2 pt-1">
-        <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">
-          Cancelar
-        </Button>
-        <Button type="submit" loading={loading} className="flex-1">
-          Crear orden
-        </Button>
+        <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">Cancelar</Button>
+        <Button type="submit" loading={loading} className="flex-1">Crear orden</Button>
       </div>
     </form>
   )
