@@ -12,6 +12,8 @@ import WorkOrderDetail from '@/pages/owner/WorkOrderDetail'
 import Products from '@/pages/owner/Products'
 import Sales from '@/pages/owner/Sales'
 import Finance from '@/pages/owner/Finance'
+import Inventory from '@/pages/owner/Inventory'
+import Suppliers from '@/pages/owner/Suppliers'
 import ContactDetail from '@/pages/owner/ContactDetail'
 import MyBikes from '@/pages/customer/MyBikes'
 import { useAuth } from '@/hooks/useAuth'
@@ -55,8 +57,10 @@ export default function App() {
             <Route path="work-orders" element={<WorkOrders />} />
             <Route path="work-orders/:id" element={<WorkOrderDetail />} />
             <Route path="products" element={<Products />} />
-            <Route path="sales"    element={<Sales />} />
-            <Route path="finance"  element={<Finance />} />
+            <Route path="sales"     element={<Sales />} />
+            <Route path="finance"   element={<Finance />} />
+            <Route path="inventory" element={<Inventory />} />
+            <Route path="suppliers" element={<Suppliers />} />
           </Route>
 
           {/* Customer */}

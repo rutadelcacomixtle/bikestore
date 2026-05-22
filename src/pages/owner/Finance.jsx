@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Plus, Package, TrendingUp } from 'lucide-react'
-import { financeService, stockEntryService, productService } from '@/lib/supabase'
-import { Button } from '@/components/ui/Button'
-import { Input, Select } from '@/components/ui/Input'
-import { Modal } from '@/components/ui/Modal'
+import { TrendingUp } from 'lucide-react'
+import { financeService } from '@/lib/supabase'
 import { Card, CardBody } from '@/components/ui/Card'
 
 const PERIODS = [
@@ -38,26 +35,14 @@ const fmt = (n) =>
 export default function Finance() {
   const [period, setPeriod] = useState('this_month')
   const [summary, setSummary] = useState(null)
-  const [entries, setEntries] = useState([])
-  const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [entryModal, setEntryModal] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState({ product_id: '', quantity: '1', unit_cost: '', supplier: '', notes: '' })
 
   const { from, to } = getPeriodRange(period)
 
   const load = async () => {
     setLoading(true)
     try {
-      const [sum, ents, prods] = await Promise.all([
-        financeService.getSummary(from, to),
-        stockEntryService.list(from, to),
-        productService.list(),
-      ])
-      setSummary(sum)
-      setEntries(ents)
-      setProducts(prods)
+      setSummary(await financeService.getSummary(from, to))
     } catch (err) {
       console.error(err)
     } finally {
@@ -66,47 +51,6 @@ export default function Finance() {
   }
 
   useEffect(() => { load() }, [period])
-
-  const handleProductChange = (productId) => {
-    const prod = products.find((p) => p.id === productId)
-    setForm((f) => ({
-      ...f,
-      product_id: productId,
-      unit_cost: prod?.cost_price > 0 ? String(prod.cost_price) : f.unit_cost,
-    }))
-  }
-
-  const handleCreateEntry = async (e) => {
-    e.preventDefault()
-    const qty      = parseInt(form.quantity)
-    const unitCost = parseFloat(form.unit_cost)
-    if (!form.product_id || !qty || isNaN(unitCost)) return
-    const prod = products.find((p) => p.id === form.product_id)
-    setSaving(true)
-    try {
-      await stockEntryService.create({
-        product_id:   form.product_id,
-        product_name: prod.name,
-        quantity:     qty,
-        unit_cost:    unitCost,
-        total_cost:   qty * unitCost,
-        supplier:     form.supplier || null,
-        notes:        form.notes    || null,
-      })
-      setEntryModal(false)
-      setForm({ product_id: '', quantity: '1', unit_cost: '', supplier: '', notes: '' })
-      await load()
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const totalEntryPreview =
-    form.quantity && form.unit_cost
-      ? parseInt(form.quantity) * parseFloat(form.unit_cost)
-      : null
 
   return (
     <div className="px-4 py-6 max-w-2xl mx-auto">
@@ -185,132 +129,8 @@ export default function Finance() {
             </Card>
           </section>
 
-          {/* Inventario */}
-          <section className="mb-6">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Inventario</p>
-            <div className="grid grid-cols-2 gap-3">
-              <Card>
-                <CardBody className="py-3">
-                  <p className="text-xs text-gray-400 mb-0.5">Compras en el período</p>
-                  <p className="text-lg font-bold text-gray-900">{fmt(summary.purchasesCost)}</p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {summary.entryCount} entrada{summary.entryCount !== 1 ? 's' : ''}
-                  </p>
-                </CardBody>
-              </Card>
-              <Card>
-                <CardBody className="py-3">
-                  <p className="text-xs text-gray-400 mb-0.5">Valor de inventario</p>
-                  <p className="text-lg font-bold text-gray-900">{fmt(summary.stockValue)}</p>
-                  <p className="text-xs text-gray-400 mt-1">a precio de costo</p>
-                </CardBody>
-              </Card>
-            </div>
-          </section>
-
-          {/* Entradas de inventario */}
-          <section>
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                Entradas de inventario
-              </p>
-              <Button size="sm" onClick={() => setEntryModal(true)}>
-                <Plus size={14} /> Registrar compra
-              </Button>
-            </div>
-
-            {entries.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-6">Sin entradas en este período</p>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {entries.map((e) => (
-                  <Card key={e.id}>
-                    <CardBody className="flex items-center gap-3 py-2.5">
-                      <div className="bg-blue-50 text-blue-700 rounded-xl p-2 shrink-0">
-                        <Package size={16} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-800 truncate">{e.product_name}</p>
-                        <p className="text-xs text-gray-400">
-                          {e.quantity} × {fmt(e.unit_cost)}
-                          {e.supplier ? ` · ${e.supplier}` : ''}
-                        </p>
-                        {e.notes && <p className="text-xs text-gray-400 truncate italic">{e.notes}</p>}
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-sm font-semibold text-gray-900">{fmt(e.total_cost)}</p>
-                        <p className="text-xs text-gray-400">
-                          {new Date(e.created_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}
-                        </p>
-                      </div>
-                    </CardBody>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </section>
         </>
       )}
-
-      {/* Modal: nueva entrada de inventario */}
-      <Modal open={entryModal} onClose={() => setEntryModal(false)} title="Registrar compra">
-        <form onSubmit={handleCreateEntry} className="flex flex-col gap-3">
-          <Select
-            label="Producto"
-            value={form.product_id}
-            onChange={handleProductChange}
-            placeholder="Selecciona un producto"
-            options={products.map((p) => ({ value: p.id, label: p.name }))}
-          />
-
-          <div className="grid grid-cols-2 gap-2">
-            <Input
-              label="Cantidad"
-              type="number"
-              min="1"
-              value={form.quantity}
-              onChange={(e) => setForm((f) => ({ ...f, quantity: e.target.value }))}
-              required
-            />
-            <Input
-              label="Costo unitario ($)"
-              type="number"
-              min="0"
-              step="0.01"
-              value={form.unit_cost}
-              onChange={(e) => setForm((f) => ({ ...f, unit_cost: e.target.value }))}
-              required
-            />
-          </div>
-
-          {totalEntryPreview !== null && !isNaN(totalEntryPreview) && (
-            <p className="text-sm text-gray-600 -mt-1">
-              Total: <span className="font-semibold text-gray-900">{fmt(totalEntryPreview)}</span>
-            </p>
-          )}
-
-          <Input
-            label="Proveedor (opcional)"
-            value={form.supplier}
-            onChange={(e) => setForm((f) => ({ ...f, supplier: e.target.value }))}
-            placeholder="Nombre del proveedor"
-          />
-          <Input
-            label="Notas (opcional)"
-            value={form.notes}
-            onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-          />
-
-          <div className="flex gap-2 pt-1">
-            <Button type="button" variant="secondary" onClick={() => setEntryModal(false)} className="flex-1">
-              Cancelar
-            </Button>
-            <Button type="submit" loading={saving} className="flex-1">
-              Guardar
-            </Button>
-          </div>
-        </form>
-      </Modal>
     </div>
   )
 }

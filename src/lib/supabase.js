@@ -377,6 +377,49 @@ export const salesService = {
   },
 }
 
+// ─── Suppliers ────────────────────────────────────────────────────────────────
+
+export const supplierService = {
+  async list() {
+    const { data, error } = await supabase
+      .from('suppliers')
+      .select('*')
+      .eq('active', true)
+      .order('name')
+    if (error) throw error
+    return data
+  },
+
+  async create(payload) {
+    const { data, error } = await supabase
+      .from('suppliers')
+      .insert(payload)
+      .select()
+      .single()
+    if (error) throw error
+    return data
+  },
+
+  async update(id, updates) {
+    const { data, error } = await supabase
+      .from('suppliers')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) throw error
+    return data
+  },
+
+  async delete(id) {
+    const { error } = await supabase
+      .from('suppliers')
+      .update({ active: false })
+      .eq('id', id)
+    if (error) throw error
+  },
+}
+
 // ─── Stock Entries ────────────────────────────────────────────────────────────
 
 export const stockEntryService = {
@@ -407,6 +450,32 @@ export const stockEntryService = {
     if (stockError) throw stockError
 
     return data
+  },
+
+  // Registrar una compra con múltiples productos en una sola operación
+  async createBatch({ supplier_id, supplier_name, notes }, items) {
+    for (const item of items) {
+      const total_cost = item.quantity * item.unit_cost
+      const { error } = await supabase
+        .from('stock_entries')
+        .insert({
+          product_id:   item.product_id,
+          product_name: item.product_name,
+          quantity:     item.quantity,
+          unit_cost:    item.unit_cost,
+          total_cost,
+          supplier:     supplier_name || null,
+          supplier_id:  supplier_id   || null,
+          notes:        notes         || null,
+        })
+      if (error) throw error
+
+      const { error: stockError } = await supabase.rpc('increment_product_stock', {
+        p_product_id: item.product_id,
+        p_quantity:   item.quantity,
+      })
+      if (stockError) throw stockError
+    }
   },
 }
 

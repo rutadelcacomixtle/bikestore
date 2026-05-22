@@ -1,26 +1,30 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ClipboardList, Users, Package, Clock, Wrench, CheckCircle, ChevronRight } from 'lucide-react'
+import { ClipboardList, Users, Package, Clock, Wrench, CheckCircle, ChevronRight, ShoppingCart, TrendingUp, Truck } from 'lucide-react'
 import { statsService } from '@/lib/supabase'
 import { Card, CardBody } from '@/components/ui/Card'
 
-// Tarjeta de resumen — cuadrada, para el grid de 2 columnas
-function SummaryCard({ label, value, icon: Icon, color, onClick }) {
+// Tarjeta de navegación grande — para el grid de accesos directos
+function NavCard({ label, description, icon: Icon, color, onClick }) {
   const colors = {
-    blue:  'bg-blue-50 text-blue-700',
-    green: 'bg-green-50 text-green-700',
-    gray:  'bg-gray-100 text-gray-600',
+    blue:   'bg-blue-50 text-blue-700',
+    green:  'bg-green-50 text-green-700',
+    gray:   'bg-gray-100 text-gray-600',
+    purple: 'bg-purple-50 text-purple-700',
+    orange: 'bg-orange-50 text-orange-700',
+    teal:   'bg-teal-50 text-teal-700',
   }
   return (
-    <Card onClick={onClick} className={onClick ? 'cursor-pointer' : ''}>
+    <Card onClick={onClick} className="cursor-pointer active:scale-95 transition-transform">
       <CardBody className="flex items-center gap-3">
         <div className={`p-2.5 rounded-xl shrink-0 ${colors[color]}`}>
-          <Icon size={20} />
+          <Icon size={22} />
         </div>
-        <div className="min-w-0">
-          <p className="text-2xl font-bold text-gray-900 leading-none">{value ?? '—'}</p>
-          <p className="text-xs text-gray-500 mt-0.5 truncate">{label}</p>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-gray-900">{label}</p>
+          {description && <p className="text-xs text-gray-400 truncate">{description}</p>}
         </div>
+        <ChevronRight size={15} className="text-gray-300 shrink-0" />
       </CardBody>
     </Card>
   )
@@ -103,36 +107,58 @@ export default function Dashboard() {
             </div>
           </section>
 
-          {/* 2. Resumen general */}
+          {/* 2. Accesos directos */}
           <section>
             <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
-              Resumen
+              Secciones
             </h2>
-            <div className="grid grid-cols-2 gap-3">
-              <SummaryCard
-                label="Total órdenes"
-                value={stats?.totalOrders}
-                icon={ClipboardList}
-                color="blue"
-                onClick={() => navigate('/owner/work-orders')}
-              />
-              <SummaryCard
+            <div className="flex flex-col gap-2">
+              <NavCard
                 label="Clientes"
-                value={stats?.totalCustomers}
+                description={stats?.totalCustomers != null ? `${stats.totalCustomers} registrados` : undefined}
                 icon={Users}
                 color="gray"
                 onClick={() => navigate('/owner/customers')}
               />
-              {/* Última tarjeta ocupa todo el ancho para evitar el grid descuadrado */}
-              <div className="col-span-2">
-                <SummaryCard
-                  label="Productos activos"
-                  value={stats?.activeProducts}
-                  icon={Package}
-                  color="green"
-                  onClick={() => navigate('/owner/products')}
-                />
-              </div>
+              <NavCard
+                label="Órdenes de trabajo"
+                description={stats?.totalOrders != null ? `${stats.totalOrders} en total` : undefined}
+                icon={ClipboardList}
+                color="blue"
+                onClick={() => navigate('/owner/work-orders')}
+              />
+              <NavCard
+                label="Productos"
+                description={stats?.activeProducts != null ? `${stats.activeProducts} activos` : undefined}
+                icon={Package}
+                color="green"
+                onClick={() => navigate('/owner/products')}
+              />
+              <NavCard
+                label="Ventas"
+                icon={ShoppingCart}
+                color="orange"
+                onClick={() => navigate('/owner/sales')}
+              />
+              <NavCard
+                label="Inventario"
+                description="Compras y entradas de stock"
+                icon={Package}
+                color="teal"
+                onClick={() => navigate('/owner/inventory')}
+              />
+              <NavCard
+                label="Proveedores"
+                icon={Truck}
+                color="orange"
+                onClick={() => navigate('/owner/suppliers')}
+              />
+              <NavCard
+                label="Finanzas"
+                icon={TrendingUp}
+                color="purple"
+                onClick={() => navigate('/owner/finance')}
+              />
             </div>
           </section>
         </>

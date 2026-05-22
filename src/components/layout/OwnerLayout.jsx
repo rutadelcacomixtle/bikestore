@@ -1,14 +1,21 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Users, ClipboardList, Package, ShoppingCart, TrendingUp, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, ClipboardList, Package, ShoppingCart, TrendingUp, Truck, LogOut } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 
 const navItems = [
-  { to: '/owner/dashboard',   icon: LayoutDashboard, label: 'Inicio'    },
-  { to: '/owner/customers',   icon: Users,            label: 'Clientes'  },
-  { to: '/owner/work-orders', icon: ClipboardList,    label: 'Órdenes'   },
-  { to: '/owner/products',    icon: Package,          label: 'Productos' },
-  { to: '/owner/sales',       icon: ShoppingCart,     label: 'Ventas'    },
-  { to: '/owner/finance',     icon: TrendingUp,       label: 'Finanzas'  },
+  { to: '/owner/dashboard',   icon: LayoutDashboard, label: 'Inicio'      },
+  { to: '/owner/customers',   icon: Users,            label: 'Clientes'    },
+  { to: '/owner/work-orders', icon: ClipboardList,    label: 'Órdenes'     },
+  { to: '/owner/products',    icon: Package,          label: 'Productos'   },
+  { to: '/owner/sales',       icon: ShoppingCart,     label: 'Ventas'      },
+  { to: '/owner/inventory',   icon: Package,          label: 'Inventario'  },
+  { to: '/owner/suppliers',   icon: Truck,            label: 'Proveedores' },
+  { to: '/owner/finance',     icon: TrendingUp,       label: 'Finanzas'    },
+]
+
+const mobileNavItems = [
+  { to: '/owner/dashboard',   icon: LayoutDashboard, label: 'Inicio'  },
+  { to: '/owner/work-orders', icon: ClipboardList,    label: 'Órdenes' },
 ]
 
 export function OwnerLayout() {
@@ -67,25 +74,25 @@ export function OwnerLayout() {
 
       {/* Bottom nav mobile */}
       <nav className="sm:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 flex" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        {navItems.map(({ to, icon: Icon, label }) => (
+        {mobileNavItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex-1 flex flex-col items-center justify-center py-1.5 gap-0.5 text-[9px] font-medium transition-colors ${
+              `flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-[11px] font-medium transition-colors ${
                 isActive ? 'text-blue-700' : 'text-gray-400'
               }`
             }
           >
-            <Icon size={18} />
+            <Icon size={20} />
             {label}
           </NavLink>
         ))}
         <button
           onClick={handleLogout}
-          className="flex-1 flex flex-col items-center justify-center py-1.5 gap-0.5 text-[9px] font-medium text-gray-400"
+          className="flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-[11px] font-medium text-gray-400"
         >
-          <LogOut size={18} />
+          <LogOut size={20} />
           Salir
         </button>
       </nav>
