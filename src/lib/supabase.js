@@ -196,6 +196,19 @@ export const workOrderService = {
       status: 'delivered',
     })
   },
+
+  async revertPaid(id) {
+    return this.update(id, {
+      paid_at: null,
+      payment_method: null,
+      status: 'ready',
+    })
+  },
+
+  async delete(id) {
+    const { error } = await supabase.from('work_orders').delete().eq('id', id)
+    if (error) throw error
+  },
 }
 
 // ─── Product Categories ───────────────────────────────────────────────────────
@@ -294,15 +307,35 @@ export const workOrderProductService = {
       .select()
       .single()
     if (error) throw error
+
+    const { error: stockError } = await supabase.rpc('decrement_product_stock', {
+      p_product_id: payload.product_id,
+      p_quantity:   payload.quantity,
+    })
+    if (stockError) throw stockError
+
     return data
   },
 
   async remove(id) {
+    const { data: entry, error: getError } = await supabase
+      .from('work_order_products')
+      .select('product_id, quantity')
+      .eq('id', id)
+      .single()
+    if (getError) throw getError
+
     const { error } = await supabase
       .from('work_order_products')
       .delete()
       .eq('id', id)
     if (error) throw error
+
+    const { error: stockError } = await supabase.rpc('increment_product_stock', {
+      p_product_id: entry.product_id,
+      p_quantity:   entry.quantity,
+    })
+    if (stockError) throw stockError
   },
 }
 
@@ -341,6 +374,99 @@ export const salesService = {
     }
 
     return saleData
+  },
+}
+
+// ─── Stock Entries ────────────────────────────────────────────────────────────
+
+export const stockEntryService = {
+  async list(from, to) {
+    let query = supabase
+      .from('stock_entries')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (from) query = query.gte('created_at', from)
+    if (to)   query = query.lte('created_at', to)
+    const { data, error } = await query
+    if (error) throw error
+    return data
+  },
+
+  async create(payload) {
+    const { data, error } = await supabase
+      .from('stock_entries')
+      .insert(payload)
+      .select()
+      .single()
+    if (error) throw error
+
+    const { error: stockError } = await supabase.rpc('increment_product_stock', {
+      p_product_id: payload.product_id,
+      p_quantity:   payload.quantity,
+    })
+    if (stockError) throw stockError
+
+    return data
+  },
+}
+
+// ─── Finance ──────────────────────────────────────────────────────────────────
+
+export const financeService = {
+  async getSummary(from, to) {
+    const { data: orders, error: ordersError } = await supabase
+      .from('work_orders')
+      .select('id, labor_cost')
+      .not('paid_at', 'is', null)
+      .gte('paid_at', from)
+      .lte('paid_at', to)
+    if (ordersError) throw ordersError
+
+    const laborRevenue = orders.reduce((s, o) => s + (o.labor_cost ?? 0), 0)
+    const orderIds = orders.map((o) => o.id)
+
+    let productRevenue = 0
+    let cogs = 0
+
+    if (orderIds.length > 0) {
+      const { data: ops, error: opsError } = await supabase
+        .from('work_order_products')
+        .select('subtotal, cost_price, quantity')
+        .in('work_order_id', orderIds)
+      if (opsError) throw opsError
+      productRevenue = ops.reduce((s, op) => s + (op.subtotal ?? 0), 0)
+      cogs = ops.reduce((s, op) => s + (op.cost_price ?? 0) * (op.quantity ?? 0), 0)
+    }
+
+    const revenue = laborRevenue + productRevenue
+    const grossProfit = revenue - cogs
+
+    const { data: entries, error: entriesError } = await supabase
+      .from('stock_entries')
+      .select('total_cost')
+      .gte('created_at', from)
+      .lte('created_at', to)
+    if (entriesError) throw entriesError
+    const purchasesCost = entries.reduce((s, e) => s + (e.total_cost ?? 0), 0)
+
+    const { data: prods, error: prodsError } = await supabase
+      .from('products')
+      .select('stock, cost_price')
+      .eq('active', true)
+    if (prodsError) throw prodsError
+    const stockValue = prods.reduce((s, p) => s + (p.stock ?? 0) * (p.cost_price ?? 0), 0)
+
+    return {
+      revenue,
+      laborRevenue,
+      productRevenue,
+      cogs,
+      grossProfit,
+      purchasesCost,
+      stockValue,
+      orderCount: orders.length,
+      entryCount: entries.length,
+    }
   },
 }
 

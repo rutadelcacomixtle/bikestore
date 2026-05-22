@@ -139,6 +139,7 @@ function ProductForm({ initial = {}, categories, onSave, onCancel, loading }) {
     name:        initial.name        ?? '',
     description: initial.description ?? '',
     price:       initial.price       ?? '',
+    cost_price:  initial.cost_price  ?? '',
     stock:       initial.stock       ?? '',
     min_stock:   initial.min_stock   ?? 0,
     sku:         initial.sku         ?? '',
@@ -157,21 +158,25 @@ function ProductForm({ initial = {}, categories, onSave, onCancel, loading }) {
       <Textarea label="Descripción" value={form.description} onChange={set('description')} />
 
       <div className="grid grid-cols-2 gap-3">
-        <Input label="Precio ($)" type="number" min="0" step="0.01" value={form.price} onChange={set('price')} required />
-        <Input label="Stock actual" type="number" min="0" value={form.stock} onChange={set('stock')} required />
+        <Input label="Precio de venta ($)" type="number" min="0" step="0.01" value={form.price} onChange={set('price')} required />
+        <Input label="Precio de costo ($)" type="number" min="0" step="0.01" value={form.cost_price} onChange={set('cost_price')} placeholder="0.00" />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-1">
-          <Input label="Stock mínimo" type="number" min="0" value={form.min_stock} onChange={set('min_stock')} />
-          <p className="text-xs text-gray-400">Muestra alerta cuando el stock llegue a este número.</p>
-        </div>
+        <Input label="Stock actual" type="number" min="0" value={form.stock} onChange={set('stock')} required />
         <Select
           label="Unidad"
           value={form.unit}
           onChange={(v) => setForm((p) => ({ ...p, unit: v }))}
           options={UNITS}
         />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-1">
+          <Input label="Stock mínimo" type="number" min="0" value={form.min_stock} onChange={set('min_stock')} />
+          <p className="text-xs text-gray-400">Alerta cuando llegue a este número.</p>
+        </div>
       </div>
 
       <Input label="Código / SKU" value={form.sku} onChange={set('sku')} placeholder="Opcional" />
@@ -254,6 +259,7 @@ export default function Products() {
       const data = {
         ...form,
         price:       parseFloat(form.price),
+        cost_price:  parseFloat(form.cost_price) || 0,
         stock:       parseInt(form.stock),
         min_stock:   parseInt(form.min_stock) || 0,
         category_id: form.category_id || null,
@@ -401,7 +407,16 @@ export default function Products() {
                     </p>
                     <p className="text-xs text-gray-500">
                       ${p.price.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-                      {' · '}{p.stock} {p.unit ?? 'pieza'}
+                      {p.cost_price > 0 && (
+                        <> · costo ${p.cost_price.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                        {' '}
+                        <span className="text-green-600">
+                          ({Math.round(((p.price - p.cost_price) / p.price) * 100)}% margen)
+                        </span></>
+                      )}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {p.stock} {p.unit ?? 'pieza'}
                       {p.min_stock > 0 ? ` (mín. ${p.min_stock})` : ''}
                     </p>
                   </div>

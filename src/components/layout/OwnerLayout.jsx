@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Users, ClipboardList, Package, ShoppingCart, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, ClipboardList, Package, ShoppingCart, TrendingUp, LogOut } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 
 const navItems = [
@@ -8,6 +8,7 @@ const navItems = [
   { to: '/owner/work-orders', icon: ClipboardList,    label: 'Órdenes'   },
   { to: '/owner/products',    icon: Package,          label: 'Productos' },
   { to: '/owner/sales',       icon: ShoppingCart,     label: 'Ventas'    },
+  { to: '/owner/finance',     icon: TrendingUp,       label: 'Finanzas'  },
 ]
 
 export function OwnerLayout() {
@@ -71,20 +72,20 @@ export function OwnerLayout() {
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-[10px] font-medium transition-colors ${
+              `flex-1 flex flex-col items-center justify-center py-1.5 gap-0.5 text-[9px] font-medium transition-colors ${
                 isActive ? 'text-blue-700' : 'text-gray-400'
               }`
             }
           >
-            <Icon size={20} />
+            <Icon size={18} />
             {label}
           </NavLink>
         ))}
         <button
           onClick={handleLogout}
-          className="flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-[10px] font-medium text-gray-400"
+          className="flex-1 flex flex-col items-center justify-center py-1.5 gap-0.5 text-[9px] font-medium text-gray-400"
         >
-          <LogOut size={20} />
+          <LogOut size={18} />
           Salir
         </button>
       </nav>

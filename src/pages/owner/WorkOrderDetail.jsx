@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Plus, Trash2, FileText, CreditCard } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, FileText, CreditCard, AlertTriangle, RotateCcw } from 'lucide-react'
 import { PDFDownloadLink } from '@react-pdf/renderer'
 import {
   workOrderService,
@@ -145,11 +145,12 @@ export default function WorkOrderDetail() {
     try {
       await workOrderProductService.add({
         work_order_id: id,
-        product_id: prod.id,
+        product_id:   prod.id,
         product_name: prod.name,
-        quantity: parseInt(qty),
-        unit_price: prod.price,
-        subtotal: prod.price * parseInt(qty),
+        quantity:     parseInt(qty),
+        unit_price:   prod.price,
+        cost_price:   prod.cost_price ?? 0,
+        subtotal:     prod.price * parseInt(qty),
       })
       setAddProductModal(false)
       setSelectedProduct('')
@@ -167,6 +168,32 @@ export default function WorkOrderDetail() {
       await load()
     } catch (err) {
       console.error(err)
+    }
+  }
+
+  const handleRevertPay = async () => {
+    if (!confirm('¿Revertir el pago? La orden volverá al estado "Lista" y podrás modificarla.')) return
+    setSaving(true)
+    try {
+      await workOrderService.revertPaid(id)
+      await load()
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDeleteOrder = async () => {
+    const lines = [`¿Eliminar esta orden de trabajo?`]
+    if (order.paid_at) lines.push('Esta orden ya fue pagada.')
+    if (orderProducts.length > 0) lines.push(`Tiene ${orderProducts.length} producto(s) asociado(s) que también se eliminarán.`)
+    lines.push('Esta acción no se puede deshacer.')
+    if (!confirm(lines.join('\n'))) return
+    try {
+      await workOrderService.delete(id)
+      navigate(-1)
+    } catch (err) {
+      console.error(err)
+      alert('No se pudo eliminar la orden: ' + err.message)
     }
   }
 
@@ -326,6 +353,11 @@ export default function WorkOrderDetail() {
             <CreditCard size={16} /> Registrar pago
           </Button>
         )}
+        {order.paid_at && (
+          <Button variant="secondary" onClick={handleRevertPay} loading={saving} className="w-full text-orange-600 border-orange-200 hover:bg-orange-50">
+            <RotateCcw size={16} /> Revertir pago
+          </Button>
+        )}
         <PDFDownloadLink
           document={<ReceiptPDF order={order} profile={person} bicycle={bicycle} orderProducts={orderProducts} total={total} />}
           fileName={`recibo-${id.slice(0, 8)}.pdf`}
@@ -337,6 +369,15 @@ export default function WorkOrderDetail() {
             </Button>
           )}
         </PDFDownloadLink>
+      </div>
+
+      <div className="mt-6 pt-4 border-t border-gray-100">
+        <button
+          onClick={handleDeleteOrder}
+          className="flex items-center gap-1.5 text-sm text-red-400 hover:text-red-600 transition-colors"
+        >
+          <AlertTriangle size={14} /> Eliminar esta orden
+        </button>
       </div>
 
       {/* Add Product Modal */}
