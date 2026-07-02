@@ -249,3 +249,14 @@ npm run preview    # preview del build
 - Al hacer login con Supabase Auth, la app verifica el perfil y redirige según el rol
 - Los recibos PDF se generan en el navegador con @react-pdf/renderer
 - PWA instalable en Android e iOS desde el navegador
+
+## Flujo de registro con OTP
+
+El registro usa `supabase.auth.signInWithOtp()` en lugar de `signUp()`:
+
+1. **Email** → se envía un código de 6 dígitos al correo
+2. **Código** → se verifica con `supabase.auth.verifyOtp()`, se crea sesión
+3. **Contraseña** → se asigna con `supabase.auth.updateUser()`, se guarda `full_name` en `profiles`
+
+**Requisito en Supabase Dashboard:**
+Ir a **Authentication → Email Templates → Magic Link** y cambiar el template para mostrar `{{ .Token }}` en vez del enlace de confirmación.

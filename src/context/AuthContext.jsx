@@ -39,19 +39,36 @@ export function AuthProvider({ children }) {
     return { user: data.user, profile: p }
   }
 
-  const register = async (email, password, name) => {
-    const { data, error } = await supabase.auth.signUp({
+  async function sendOtp(email) {
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle()
+    if (existing) throw new Error('Este correo ya está registrado. Inicia sesión.')
+
+    const { error } = await supabase.auth.signInWithOtp({
       email,
-      password,
-      options: {
-        data: { full_name: name },
-        emailRedirectTo: `${window.location.origin}/login`,
-      },
+      options: { shouldCreateUser: true },
     })
     if (error) throw error
-    // Si Supabase requiere confirmación, identities viene vacío o sin email_confirmed_at
-    const needsConfirmation = !data.session
-    return { user: data.user, profile: null, needsConfirmation }
+  }
+
+  async function verifyOtp(email, token) {
+    const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'email' })
+    if (error) throw error
+    await loadProfile(data.user)
+    return data
+  }
+
+  async function completeRegistration(password, fullName) {
+    const { error: pwErr } = await supabase.auth.updateUser({ password })
+    if (pwErr) throw pwErr
+
+    if (!user) return
+    const { error: profileErr } = await profileService.update(user.id, { full_name: fullName })
+    if (profileErr) throw profileErr
+    await loadProfile(user)
   }
 
   const logout = async () => {
@@ -64,7 +81,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, loading, login, register, logout, isOwner, isCustomer }}
+      value={{ user, profile, loading, login, sendOtp, verifyOtp, completeRegistration, logout, isOwner, isCustomer }}
     >
       {children}
     </AuthContext.Provider>
