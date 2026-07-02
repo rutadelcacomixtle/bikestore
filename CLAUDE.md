@@ -1,88 +1,159 @@
-# Taller de Bicis — Contexto del Proyecto
+# Bike Store — Contexto del Proyecto
 
 ## Descripción
 
 Aplicación web PWA para gestión de un pequeño taller de bicicletas en México.
-Permite al dueño administrar clientes, bicicletas, órdenes de trabajo, catálogo
-de productos y generar recibos en PDF. Los clientes tienen un portal de solo
-lectura para ver el historial de reparaciones de sus bicis.
+Permite al dueño administrar clientes (con y sin cuenta), bicicletas, órdenes de
+trabajo, catálogo de productos, inventario, proveedores, ventas directas, finanzas
+y generar recibos en PDF. Los clientes registrados tienen un portal de solo lectura
+para ver el historial de reparaciones de sus bicis.
 
 ## Stack tecnológico
 
-- **Frontend**: React 18 + Vite 5
+- **Frontend**: React 18 + Vite 6
 - **Estilos**: Tailwind CSS v3 (mobile-first)
 - **Routing**: react-router-dom v6
-- **Backend/Auth/DB**: Appwrite Cloud (appwrite.io)
-- **SDK**: appwrite (npm package)
+- **Backend/Auth/DB**: Supabase
+- **SDK**: @supabase/supabase-js
 - **PWA**: vite-plugin-pwa
 - **PDF**: @react-pdf/renderer
 - **Íconos**: lucide-react
+- **UI**: @headlessui/react
 
-## Appwrite — Estructura de datos
+## Supabase — Esquema de datos
 
-### Colecciones (Database ID: `taller-db`)
+### Tablas
 
-**profiles** (Collection ID: `profiles`)
+**profiles**
 
-- userId: string (ID del usuario en Appwrite Auth)
-- fullName: string
-- phone: string
-- email: string
-- role: enum ['owner', 'customer']
+- `id`: uuid (FK a auth.users)
+- `full_name`: text
+- `phone`: text
+- `email`: text
+- `role`: enum ['owner', 'customer']
 
-**bicycles** (Collection ID: `bicycles`)
+**contacts** (clientes sin cuenta)
 
-- customerId: string (userId del cliente)
-- brand: string
-- model: string
-- serialNumber: string
-- color: string
-- notes: string
+- `id`: uuid
+- `full_name`: text
+- `phone`: text
+- `email`: text
+- `notes`: text
+- `created_at`: timestamptz
 
-**work_orders** (Collection ID: `work_orders`)
+**bicycles**
 
-- bicycleId: string
-- customerId: string
-- status: enum ['received', 'in_progress', 'ready', 'delivered']
-- description: string
-- diagnosis: string
-- laborCost: float
-- paidAt: datetime (nullable)
-- paymentMethod: enum ['cash', 'transfer', 'card'] (nullable)
-- createdAt: datetime
-- updatedAt: datetime
+- `id`: uuid
+- `customer_id`: uuid (FK a profiles, nullable)
+- `contact_id`: uuid (FK a contacts, nullable)
+- `brand`: text
+- `model`: text
+- `serial_number`: text
+- `color`: text
+- `notes`: text
 
-**products** (Collection ID: `products`)
+**work_orders**
 
-- name: string
-- description: string
-- price: float
-- stock: integer
-- category: string
-- active: boolean
+- `id`: uuid
+- `bicycle_id`: uuid (FK a bicycles, nullable)
+- `customer_id`: uuid (FK a profiles, nullable)
+- `contact_id`: uuid (FK a contacts, nullable)
+- `status`: enum ['received', 'in_progress', 'ready', 'delivered']
+- `description`: text
+- `diagnosis`: text
+- `labor_cost`: float
+- `paid_at`: timestamptz (nullable)
+- `payment_method`: enum ['cash', 'transfer', 'card'] (nullable)
+- `created_at`: timestamptz
+- `updated_at`: timestamptz
 
-**work_order_products** (Collection ID: `work_order_products`)
+**products**
 
-- workOrderId: string
-- productId: string
-- productName: string (snapshot del nombre)
-- quantity: integer
-- unitPrice: float (snapshot del precio)
-- subtotal: float
+- `id`: uuid
+- `name`: text
+- `description`: text
+- `price`: float
+- `stock`: integer
+- `active`: boolean
+- `cost_price`: float (precio de costo)
+- `sku`: text
+- `unit`: text (ej. 'pieza')
+- `min_stock`: integer
+- `category_id`: uuid (FK a product_categories)
 
-## Appwrite — Permisos
+**product_categories**
 
-- El dueño usa un Team llamado "owners" (Team ID: `owners`)
-- Todas las colecciones dan acceso completo al team "owners"
-- Los documentos de cada cliente llevan permiso de lectura para su userId
-- Los clientes NUNCA pueden escribir directamente, solo leer sus propios datos
+- `id`: uuid
+- `name`: text
+- `description`: text
+- `sort_order`: integer
+
+**work_order_products**
+
+- `id`: uuid
+- `work_order_id`: uuid
+- `product_id`: uuid
+- `product_name`: text (snapshot)
+- `quantity`: integer
+- `unit_price`: float (snapshot)
+- `subtotal`: float
+- `cost_price`: float (snapshot del precio de costo)
+
+**sales** (ventas directas, sin orden de trabajo)
+
+- `id`: uuid
+- `customer_id`: uuid (FK a profiles, nullable)
+- `payment_method`: text
+- `total`: numeric
+- `notes`: text
+- `created_at`: timestamptz
+
+**sale_items**
+
+- `id`: uuid
+- `sale_id`: uuid (FK a sales, CASCADE)
+- `product_id`: uuid
+- `product_name`: text
+- `quantity`: integer
+- `unit_price`: numeric
+- `subtotal`: numeric
+
+**stock_entries** (compras a proveedor)
+
+- `id`: uuid
+- `product_id`: uuid
+- `product_name`: text
+- `quantity`: integer
+- `unit_cost`: float
+- `total_cost`: float
+- `supplier`: text
+- `supplier_id`: uuid (FK a suppliers)
+- `notes`: text
+- `created_at`: timestamptz
+
+**suppliers**
+
+- `id`: uuid
+- `name`: text
+- `active`: boolean
+
+### RPCs
+
+- `decrement_product_stock(p_product_id, p_quantity)` — descuenta stock atómicamente (con validación de suficiente stock)
+- `increment_product_stock(p_product_id, p_quantity)` — incrementa stock atómicamente
+- `merge_contact_into_profile(p_contact_id, p_profile_id)` — migra bicis y órdenes de un contacto a un perfil y elimina el contacto
+
+### RLS
+
+- Todas las tablas usan Row Level Security
+- Los owners tienen acceso completo mediante policy basada en `profiles.role = 'owner'`
+- Los clientes solo pueden leer sus propios datos (vía policies específicas donde aplica)
 
 ## Variables de entorno (.env)
 
 ```
-VITE_APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1
-VITE_APPWRITE_PROJECT_ID=
-VITE_APPWRITE_DATABASE_ID=taller-db
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
 ```
 
 ## Estructura de carpetas
@@ -109,14 +180,18 @@ src/
 │   │   ├── Dashboard.jsx
 │   │   ├── Customers.jsx
 │   │   ├── CustomerDetail.jsx
+│   │   ├── ContactDetail.jsx
 │   │   ├── WorkOrders.jsx
 │   │   ├── WorkOrderDetail.jsx
-│   │   └── Products.jsx
+│   │   ├── Products.jsx
+│   │   ├── Sales.jsx
+│   │   ├── Finance.jsx
+│   │   ├── Inventory.jsx
+│   │   └── Suppliers.jsx
 │   └── customer/
 │       └── MyBikes.jsx
 ├── lib/
-│   ├── appwrite.js      ← cliente Appwrite + servicios
-│   └── permissions.js   ← helpers de permisos Appwrite
+│   └── supabase.js         ← cliente Supabase + servicios por tabla
 ├── context/
 │   └── AuthContext.jsx
 ├── hooks/
@@ -131,9 +206,14 @@ src/
 - `/owner/dashboard` → solo owner
 - `/owner/customers` → solo owner
 - `/owner/customers/:id` → solo owner
+- `/owner/contacts/:id` → solo owner
 - `/owner/work-orders` → solo owner
 - `/owner/work-orders/:id` → solo owner
 - `/owner/products` → solo owner
+- `/owner/sales` → solo owner
+- `/owner/finance` → solo owner
+- `/owner/inventory` → solo owner
+- `/owner/suppliers` → solo owner
 - `/my-bikes` → solo customer
 
 ## Estados de órden de trabajo (badges)
@@ -151,7 +231,7 @@ src/
 - Funciones async/await, nunca .then()
 - Manejo de errores con try/catch en todas las operaciones
 - Loading states en toda operación asíncrona
-- Appwrite SDK importado siempre desde `@/lib/appwrite.js`
+- SDK importado desde `@/lib/supabase.js`
 
 ## Comandos frecuentes
 
@@ -164,10 +244,8 @@ npm run preview    # preview del build
 ## Notas importantes
 
 - La app es mobile-first: diseñada principalmente para celular
-- El owner navega con una barra inferior en móvil
-- Los clientes se registran ellos mismos en /login
-- El dueño se agrega manualmente al team "owners" desde la consola de Appwrite
-- Al hacer login, la app verifica si existe un perfil; si no, lo crea con role='customer'
-- El dueño puede promover clientes a owner desde la consola de Appwrite (por ahora)
+- El owner navega con barra superior en desktop y barra inferior en móvil
+- Hay dos tipos de clientes: registrados (profiles) y ocasionales (contacts)
+- Al hacer login con Supabase Auth, la app verifica el perfil y redirige según el rol
 - Los recibos PDF se generan en el navegador con @react-pdf/renderer
 - PWA instalable en Android e iOS desde el navegador

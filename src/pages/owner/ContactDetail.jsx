@@ -279,7 +279,7 @@ export default function ContactDetail() {
 
   const handleInvite = () => {
     const url = `${window.location.origin}/login`
-    const msg = `Hola ${contact.full_name}, te invitamos a crear tu cuenta en CharlsBikes para consultar el historial de tu bicicleta: ${url}`
+    const msg = `Hola ${contact.full_name}, te invitamos a crear tu cuenta en Bike Store para consultar el historial de tu bicicleta: ${url}`
     if (contact.phone) {
       const digits = contact.phone.replace(/\D/g, '')
       window.open(`https://wa.me/${digits}?text=${encodeURIComponent(msg)}`, '_blank')

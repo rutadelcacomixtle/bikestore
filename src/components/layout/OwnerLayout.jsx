@@ -31,7 +31,7 @@ export function OwnerLayout() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header desktop */}
       <header className="hidden sm:flex items-center justify-between bg-white border-b border-gray-200 px-6 h-14 shrink-0">
-        <span className="font-bold text-blue-700 text-lg">CharlsBikes</span>
+        <span className="font-bold text-blue-700 text-lg">Bike Store</span>
         <nav className="flex items-center gap-1">
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink
@@ -61,7 +61,7 @@ export function OwnerLayout() {
 
       {/* Mobile header */}
       <header className="sm:hidden flex items-center justify-between bg-white border-b border-gray-200 px-4 h-12 shrink-0">
-        <span className="font-bold text-blue-700">CharlsBikes</span>
+        <span className="font-bold text-blue-700">Bike Store</span>
         <span className="text-xs text-gray-500 truncate max-w-[140px]">
           {profile?.full_name}
         </span>

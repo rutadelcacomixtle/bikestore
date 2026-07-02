@@ -26,8 +26,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'apple-touch-icon.png', 'logo.svg'],
       manifest: {
-        name: 'CharlsBikes Taller',
-        short_name: 'CharlsBikes',
+        name: 'Bike Store',
+        short_name: 'Bike Store',
         description: 'Gestión de taller de bicicletas',
         theme_color: '#1d4ed8',
         background_color: '#ffffff',

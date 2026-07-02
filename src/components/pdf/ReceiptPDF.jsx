@@ -91,7 +91,7 @@ export function ReceiptPDF({ order, profile, bicycle, orderProducts, total }) {
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <View>
-            <Text style={styles.brand}>CharlsBikes</Text>
+            <Text style={styles.brand}>Bike Store</Text>
             <Text style={styles.brandSub}>Taller de bicicletas</Text>
           </View>
           <View>
@@ -185,7 +185,7 @@ export function ReceiptPDF({ order, profile, bicycle, orderProducts, total }) {
         </View>
 
         <Text style={styles.footer}>
-          Gracias por su preferencia · CharlsBikes Taller de bicicletas
+          Gracias por su preferencia · Bike Store
         </Text>
       </Page>
     </Document>

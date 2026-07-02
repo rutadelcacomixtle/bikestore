@@ -91,7 +91,7 @@ export default function Login() {
           <div className="bg-blue-700 text-white rounded-xl p-3 mb-3">
             <Bike size={28} />
           </div>
-          <h1 className="text-xl font-bold text-gray-900">CharlsBikes</h1>
+          <h1 className="text-xl font-bold text-gray-900">Bike Store</h1>
           <p className="text-sm text-gray-500">Taller de bicicletas</p>
         </div>
 
