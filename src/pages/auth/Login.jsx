@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bike, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -129,10 +129,7 @@ export default function Login() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div className="flex flex-col items-center mb-6">
-          <div className="bg-blue-700 text-white rounded-xl p-3 mb-3">
-            <Bike size={28} />
-          </div>
-          <h1 className="text-xl font-bold text-gray-900">Bike Store</h1>
+          <img src="/logo.png" alt="Bike Store" className="h-16 mb-3" />
           <p className="text-sm text-gray-500">Taller de bicicletas</p>
         </div>
 

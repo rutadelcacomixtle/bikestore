@@ -14,7 +14,7 @@ export function CustomerLayout() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 px-4 h-12 flex items-center justify-between">
-        <span className="font-bold text-blue-700">Bike Store</span>
+        <img src="/logo.png" alt="Bike Store" className="h-7" />
         <div className="flex items-center gap-3">
           <span className="text-xs text-gray-500 truncate max-w-[120px]">
             {profile?.full_name}

@@ -24,7 +24,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.png', 'apple-touch-icon.png', 'logo.svg'],
+      includeAssets: ['favicon.png', 'apple-touch-icon.png', 'logo.png', 'logo.svg'],
       manifest: {
         name: 'Bike Store',
         short_name: 'Bike Store',
