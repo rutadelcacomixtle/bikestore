@@ -10,6 +10,10 @@ import { Input, Textarea } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { Card, CardBody } from '@/components/ui/Card'
 import { StatusBadge } from '@/components/ui/Badge'
+import BrandCombobox from '@/components/ui/BrandCombobox'
+import brands from '@/data/bikeBrands.json'
+
+const brandNames = Object.keys(brands)
 
 // ─── Formulario de bicicleta ──────────────────────────────────────────────────
 
@@ -23,11 +27,15 @@ function BikeForm({ initial = {}, onSave, onCancel, loading }) {
   })
   const set = (f) => (e) => setForm((p) => ({ ...p, [f]: e.target.value }))
 
+  const modelOptions = form.brand && brands[form.brand]
+    ? brands[form.brand]
+    : Object.values(brands).flat()
+
   return (
     <form className="flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); onSave(form) }}>
       <div className="grid grid-cols-2 gap-3">
-        <Input label="Marca" value={form.brand} onChange={set('brand')} required />
-        <Input label="Modelo" value={form.model} onChange={set('model')} required />
+        <BrandCombobox label="Marca" value={form.brand} onChange={set('brand')} options={brandNames} required />
+        <BrandCombobox label="Modelo" value={form.model} onChange={set('model')} options={modelOptions} required />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Input label="No. serie" value={form.serial_number} onChange={set('serial_number')} />

@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { Card, CardBody } from '@/components/ui/Card'
 import { StatusBadge } from '@/components/ui/Badge'
+import BrandCombobox from '@/components/ui/BrandCombobox'
+import brands from '@/data/bikeBrands.json'
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Todos los estados' },
@@ -130,6 +132,9 @@ function NewOrderForm({ onSave, onCancel, loading }) {
   }
 
   const selectedId = customerType === 'profile' ? form.customer_id : form.contact_id
+  const modelOptions = newBike.brand && brands[newBike.brand]
+    ? brands[newBike.brand]
+    : Object.values(brands).flat()
 
   return (
     <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
@@ -237,16 +242,18 @@ function NewOrderForm({ onSave, onCancel, loading }) {
           saving={inlineSaving}
         >
           <div className="grid grid-cols-2 gap-2">
-            <Input
-              placeholder="Marca *"
+            <BrandCombobox
               value={newBike.brand}
-              onChange={(e) => setNewBike((p) => ({ ...p, brand: e.target.value }))}
+              onChange={(val) => setNewBike((p) => ({ ...p, brand: val }))}
+              options={Object.keys(brands)}
+              placeholder="Marca *"
               autoFocus
             />
-            <Input
-              placeholder="Modelo *"
+            <BrandCombobox
               value={newBike.model}
-              onChange={(e) => setNewBike((p) => ({ ...p, model: e.target.value }))}
+              onChange={(val) => setNewBike((p) => ({ ...p, model: val }))}
+              options={modelOptions}
+              placeholder="Modelo *"
             />
           </div>
         </InlineForm>
