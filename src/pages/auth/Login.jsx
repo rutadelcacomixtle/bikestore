@@ -13,12 +13,13 @@ export default function Login() {
   const codeRefs = useRef([]);
 
   useEffect(() => {
+    if (mode === "register") return;
     if (!authLoading && user && profile) {
       navigate(profile?.role === "owner" ? "/owner/dashboard" : "/my-bikes", {
         replace: true,
       });
     }
-  }, [user, profile, authLoading]);
+  }, [user, profile, authLoading, mode]);
 
   const [mode, setMode] = useState("login");
   const [regStep, setRegStep] = useState("email");
