@@ -13,7 +13,7 @@ export default function Login() {
   const codeRefs = useRef([]);
 
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && user && profile) {
       navigate(profile?.role === "owner" ? "/owner/dashboard" : "/my-bikes", {
         replace: true,
       });

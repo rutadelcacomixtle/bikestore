@@ -66,7 +66,9 @@ export function AuthProvider({ children }) {
     if (pwErr) throw pwErr
 
     if (!user) return
-    const { error: profileErr } = await profileService.update(user.id, { full_name: fullName })
+    const { error: profileErr } = await supabase
+      .from('profiles')
+      .upsert({ id: user.id, email: user.email, full_name: fullName, role: 'customer' }, { onConflict: 'id' })
     if (profileErr) throw profileErr
     await loadProfile(user)
   }
