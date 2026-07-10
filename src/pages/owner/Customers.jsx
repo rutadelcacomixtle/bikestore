@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { Search, ChevronRight, User, UserPlus } from 'lucide-react'
 import { profileService, contactService } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
-import { Input, Textarea } from '@/components/ui/Input'
+import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { Card, CardBody } from '@/components/ui/Card'
 
 function NewContactForm({ onSave, onCancel, loading }) {
-  const [form, setForm] = useState({ full_name: '', phone: '', email: '', notes: '' })
+  const [form, setForm] = useState({ full_name: '', phone: '', email: '' })
   const set = (f) => (e) => setForm((p) => ({ ...p, [f]: e.target.value }))
 
   return (
@@ -16,7 +16,6 @@ function NewContactForm({ onSave, onCancel, loading }) {
       <Input label="Nombre completo" value={form.full_name} onChange={set('full_name')} required autoFocus />
       <Input label="Teléfono" type="tel" value={form.phone} onChange={set('phone')} />
       <Input label="Correo (opcional)" type="email" value={form.email} onChange={set('email')} />
-      <Textarea label="Notas" value={form.notes} onChange={set('notes')} rows={2} placeholder="Opcional" />
       <div className="flex gap-2 pt-1">
         <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">Cancelar</Button>
         <Button type="submit" loading={loading} className="flex-1">Guardar</Button>
@@ -67,7 +66,6 @@ export default function Customers() {
         full_name: form.full_name,
         phone:     form.phone     || null,
         email:     form.email     || null,
-        notes:     form.notes     || null,
       })
       setModalOpen(false)
       navigate(`/owner/contacts/${contact.id}`)
