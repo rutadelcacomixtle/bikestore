@@ -65,8 +65,8 @@ export default function CustomerProfile() {
 
       <form onSubmit={handleSave} className="flex flex-col gap-3 mb-8">
         <Input label="Nombre completo" value={form.full_name} onChange={set('full_name')} required />
-        <Input label="Teléfono" type="tel" value={form.phone} onChange={set('phone')} />
-        <Input label="Correo" type="email" value={form.email} onChange={set('email')} />
+        <Input label="Teléfono" type="tel" value={form.phone} readOnly tabIndex={-1} className="bg-gray-50 text-gray-400 cursor-not-allowed" />
+        <Input label="Correo" type="email" value={form.email} readOnly tabIndex={-1} className="bg-gray-50 text-gray-400 cursor-not-allowed" />
 
         {message && (
           <p className={`text-sm rounded-lg px-3 py-2 ${message.startsWith('Error') ? 'text-red-600 bg-red-50' : 'text-green-700 bg-green-50'}`}>
