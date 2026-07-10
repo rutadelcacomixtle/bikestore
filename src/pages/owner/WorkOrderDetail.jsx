@@ -172,7 +172,7 @@ export default function WorkOrderDetail() {
   }
 
   const handleRevertPay = async () => {
-    if (!confirm('¿Revertir el pago? La orden volverá al estado "Lista" y podrás modificarla.')) return
+    if (!confirm('¿Revertir el pago?')) return
     setSaving(true)
     try {
       await workOrderService.revertPaid(id)
@@ -249,7 +249,7 @@ export default function WorkOrderDetail() {
       <div className="flex items-start justify-between mb-4">
         <div>
           <h1 className="text-xl font-bold text-gray-900 mb-1">{order.description}</h1>
-          <StatusBadge status={order.status} />
+          <StatusBadge status={order.status} paidAt={order.paid_at} />
         </div>
         <Button size="sm" variant="secondary" onClick={() => setEditModal(true)}>
           Editar
@@ -348,7 +348,7 @@ export default function WorkOrderDetail() {
             Marcar como: {STATUS_LABELS[nextStatus()]}
           </Button>
         )}
-        {order.status === 'ready' && !order.paid_at && (
+        {!order.paid_at && (
           <Button variant="secondary" onClick={() => setPayModal(true)} className="w-full">
             <CreditCard size={16} /> Registrar pago
           </Button>

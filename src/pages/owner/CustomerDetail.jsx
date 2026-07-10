@@ -268,7 +268,7 @@ export default function CustomerDetail() {
                       {new Date(o.created_at).toLocaleDateString('es-MX')}
                     </p>
                   </div>
-                  <StatusBadge status={o.status} />
+                  <StatusBadge status={o.status} paidAt={o.paid_at} />
                 </CardBody>
               </Card>
             ))}

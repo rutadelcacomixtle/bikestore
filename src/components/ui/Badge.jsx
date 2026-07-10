@@ -5,11 +5,27 @@ const statusMap = {
   delivered:   { label: 'Entregada',   cls: 'bg-blue-100 text-blue-800' },
 }
 
-export function StatusBadge({ status }) {
-  const { label, cls } = statusMap[status] ?? { label: status, cls: 'bg-gray-100 text-gray-700' }
+export function StatusBadge({ status, paidAt }) {
+  const def = statusMap[status] ?? { label: status, cls: 'bg-gray-100 text-gray-700' }
+
+  if (status === 'delivered') {
+    return (
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${paidAt ? def.cls : 'bg-orange-100 text-orange-800'}`}>
+        {def.label}
+      </span>
+    )
+  }
+
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${cls}`}>
-      {label}
+    <span className="inline-flex items-center gap-1.5">
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${def.cls}`}>
+        {def.label}
+      </span>
+      {paidAt && (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          Pagado
+        </span>
+      )}
     </span>
   )
 }

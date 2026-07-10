@@ -65,7 +65,7 @@ function BikeCard({ bike }) {
                 <div key={o.id} className="bg-white rounded-lg border border-gray-100 p-3">
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <p className="text-sm text-gray-800 font-medium">{o.description}</p>
-                    <StatusBadge status={o.status} />
+                    <StatusBadge status={o.status} paidAt={o.paid_at} />
                   </div>
                   {o.diagnosis && (
                     <p className="text-xs text-gray-500 mb-1">{o.diagnosis}</p>

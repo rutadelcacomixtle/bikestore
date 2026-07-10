@@ -198,7 +198,6 @@ export const workOrderService = {
     return this.update(id, {
       paid_at: new Date().toISOString(),
       payment_method: paymentMethod,
-      status: 'delivered',
     })
   },
 
@@ -206,7 +205,6 @@ export const workOrderService = {
     return this.update(id, {
       paid_at: null,
       payment_method: null,
-      status: 'ready',
     })
   },
 

@@ -363,7 +363,7 @@ export default function WorkOrders() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <StatusBadge status={o.status} />
+                  <StatusBadge status={o.status} paidAt={o.paid_at} />
                   <ChevronRight size={14} className="text-gray-300" />
                 </div>
               </CardBody>
