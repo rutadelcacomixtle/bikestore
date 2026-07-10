@@ -39,7 +39,7 @@ export function AuthProvider({ children }) {
     return { user: data.user, profile: p }
   }
 
-  async function sendOtp(email) {
+  async function register(email, password, fullName) {
     const { data: existing } = await supabase
       .from('profiles')
       .select('id')
@@ -47,30 +47,19 @@ export function AuthProvider({ children }) {
       .maybeSingle()
     if (existing) throw new Error('Este correo ya está registrado. Inicia sesión.')
 
-    const { error } = await supabase.auth.signInWithOtp({
+    const { data, error } = await supabase.auth.signUp({
       email,
-      options: { shouldCreateUser: true },
+      password,
+      options: { data: { full_name: fullName } },
     })
     if (error) throw error
-  }
 
-  async function verifyOtp(email, token) {
-    const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'email' })
-    if (error) throw error
-    await loadProfile(data.user)
-    return data
-  }
-
-  async function completeRegistration(password, fullName) {
-    const { error: pwErr } = await supabase.auth.updateUser({ password })
-    if (pwErr) throw pwErr
-
-    if (!user) return
     const { error: profileErr } = await supabase
       .from('profiles')
-      .upsert({ id: user.id, email: user.email, full_name: fullName, role: 'customer' }, { onConflict: 'id' })
+      .insert({ id: data.user.id, email, full_name: fullName, role: 'customer' })
     if (profileErr) throw profileErr
-    await loadProfile(user)
+
+    return data
   }
 
   const logout = async () => {
@@ -83,7 +72,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, loading, login, sendOtp, verifyOtp, completeRegistration, logout, isOwner, isCustomer }}
+      value={{ user, profile, loading, login, register, logout, isOwner, isCustomer }}
     >
       {children}
     </AuthContext.Provider>

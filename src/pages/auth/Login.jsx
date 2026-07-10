@@ -1,16 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
-const CODE_LENGTH = 6;
-
 export default function Login() {
-  const { login, sendOtp, verifyOtp, completeRegistration, user, profile, loading: authLoading } = useAuth();
+  const { login, register, user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const codeRefs = useRef([]);
   const [mode, setMode] = useState("login");
 
   useEffect(() => {
@@ -22,87 +18,28 @@ export default function Login() {
     }
   }, [user, profile, authLoading, mode]);
 
-  const [regStep, setRegStep] = useState("email");
   const [email, setEmail] = useState("");
-  const [code, setCode] = useState(Array(CODE_LENGTH).fill(""));
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
-  const resetReg = () => {
-    setRegStep("email");
+  const resetForm = () => {
     setEmail("");
-    setCode(Array(CODE_LENGTH).fill(""));
     setName("");
     setPassword("");
     setError("");
+    setSuccess(false);
   };
 
-  const handleCodeChange = (index, value) => {
-    if (value.length > 1) return;
-    const newCode = [...code];
-    newCode[index] = value;
-    setCode(newCode);
-    if (value && index < CODE_LENGTH - 1) {
-      codeRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleCodeKeyDown = (index, e) => {
-    if (e.key === "Backspace" && !code[index] && index > 0) {
-      codeRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handlePaste = (e) => {
-    e.preventDefault();
-    const pasted = (e.clipboardData?.getData("text") ?? "").replace(/\D/g, "").slice(0, CODE_LENGTH);
-    if (!pasted) return;
-    const newCode = Array(CODE_LENGTH).fill("");
-    for (let i = 0; i < pasted.length; i++) newCode[i] = pasted[i];
-    setCode(newCode);
-    const nextIndex = Math.min(pasted.length, CODE_LENGTH - 1);
-    codeRefs.current[nextIndex]?.focus();
-  };
-
-  const handleSendOtp = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      await sendOtp(email);
-      setRegStep("code");
-    } catch (err) {
-      setError(err.message ?? "Ocurrió un error. Intenta de nuevo.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyCode = async () => {
-    setError("");
-    setLoading(true);
-    try {
-      const token = code.join("");
-      await verifyOtp(email, token);
-      setRegStep("password");
-    } catch (err) {
-      setError(err.message ?? "Código inválido o expirado. Intenta de nuevo.");
-      setCode(Array(CODE_LENGTH).fill(""));
-      codeRefs.current[0]?.focus();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCompleteReg = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      await completeRegistration(password, name);
-      navigate("/my-bikes", { replace: true });
+      await register(email, password, name);
+      setSuccess(true);
     } catch (err) {
       setError(err.message ?? "Ocurrió un error. Intenta de nuevo.");
     } finally {
@@ -141,7 +78,7 @@ export default function Login() {
               onClick={() => {
                 setMode(m);
                 setError("");
-                resetReg();
+                resetForm();
               }}
               className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-colors ${
                 mode === m
@@ -180,103 +117,48 @@ export default function Login() {
               Entrar
             </Button>
           </form>
+        ) : success ? (
+          <div className="text-center py-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Revisa tu correo</h3>
+            <p className="text-sm text-gray-600">
+              Te enviamos un enlace de confirmación a <strong>{email}</strong>.
+              Haz clic en el enlace para activar tu cuenta y después inicia sesión.
+            </p>
+          </div>
         ) : (
-          <>
-            {regStep === "email" && (
-              <form onSubmit={handleSendOtp} className="flex flex-col gap-3">
-                <Input
-                  label="Correo electrónico"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="correo@ejemplo.com"
-                  required
-                />
-                {error && (
-                  <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
-                )}
-                <Button type="submit" loading={loading} className="mt-1 w-full" size="lg">
-                  Enviar código
-                </Button>
-              </form>
+          <form onSubmit={handleRegister} className="flex flex-col gap-3">
+            <Input
+              label="Nombre completo"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ixchel García"
+              required
+            />
+            <Input
+              label="Correo electrónico"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="correo@ejemplo.com"
+              required
+            />
+            <Input
+              label="Contraseña"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              minLength={6}
+              required
+            />
+            {error && (
+              <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
             )}
-
-            {regStep === "code" && (
-              <div className="flex flex-col gap-4">
-                <p className="text-sm text-gray-600 text-center">
-                  Ingresa el código de 6 dígitos que enviamos a{" "}
-                  <strong>{email}</strong>
-                </p>
-                <div className="flex justify-center gap-2" onPaste={handlePaste}>
-                  {code.map((digit, i) => (
-                    <input
-                      key={i}
-                      ref={(el) => { codeRefs.current[i] = el }}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleCodeChange(i, e.target.value)}
-                      onKeyDown={(e) => handleCodeKeyDown(i, e)}
-                      autoFocus={i === 0}
-                      className="w-10 h-12 text-center text-lg font-bold border border-gray-300 rounded-lg focus:border-blue-700 focus:ring-1 focus:ring-blue-700 outline-none"
-                    />
-                  ))}
-                </div>
-                {error && (
-                  <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
-                )}
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => { setRegStep("email"); setError(""); }}
-                    className="flex-1"
-                  >
-                    <ArrowLeft size={16} className="mr-1" />
-                    Atrás
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleVerifyCode}
-                    loading={loading}
-                    disabled={code.some((d) => !d)}
-                    className="flex-1"
-                  >
-                    Verificar
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {regStep === "password" && (
-              <form onSubmit={handleCompleteReg} className="flex flex-col gap-3">
-                <Input
-                  label="Nombre completo"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Ixchel García"
-                  required
-                />
-                <Input
-                  label="Contraseña"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  minLength={6}
-                  required
-                />
-                {error && (
-                  <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
-                )}
-                <Button type="submit" loading={loading} className="mt-1 w-full" size="lg">
-                  Crear cuenta
-                </Button>
-              </form>
-            )}
-          </>
+            <Button type="submit" loading={loading} className="mt-1 w-full" size="lg">
+              Crear cuenta
+            </Button>
+          </form>
         )}
       </div>
     </div>
