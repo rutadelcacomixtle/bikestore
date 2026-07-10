@@ -151,7 +151,7 @@ export default function CustomerDetail() {
       await bicycleService.delete(id)
       await load()
     } catch (err) {
-      console.error(err)
+      alert(err.message)
     }
   }
 

@@ -130,7 +130,7 @@ export const bicycleService = {
   },
 
   async delete(id) {
-    const { error } = await supabase.from('bicycles').delete().eq('id', id)
+    const { error } = await supabase.rpc('delete_bicycle', { p_bicycle_id: id })
     if (error) throw error
   },
 }
