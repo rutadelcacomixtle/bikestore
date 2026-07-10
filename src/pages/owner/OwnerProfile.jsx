@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { User, LogOut } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
@@ -7,15 +7,24 @@ import { Input } from '@/components/ui/Input'
 import { profileService } from '@/lib/supabase'
 
 export default function OwnerProfile() {
-  const { profile, logout } = useAuth()
+  const { profile, user, logout } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({
-    full_name: profile?.full_name ?? '',
-    phone:     profile?.phone     ?? '',
-    email:     profile?.email     ?? '',
+    full_name: '',
+    phone:     '',
+    email:     '',
   })
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    if (!profile) return
+    setForm({
+      full_name: profile.full_name ?? '',
+      phone:     profile.phone     ?? '',
+      email:     profile.email     ?? '',
+    })
+  }, [profile])
 
   const set = (f) => (e) => setForm((p) => ({ ...p, [f]: e.target.value }))
 
@@ -24,7 +33,7 @@ export default function OwnerProfile() {
     setMessage('')
     setSaving(true)
     try {
-      await profileService.update(profile.id, {
+      await profileService.update(user.id, {
         full_name: form.full_name,
         phone:     form.phone  || null,
         email:     form.email  || null,
