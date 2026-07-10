@@ -178,6 +178,15 @@ export default function CustomerDetail() {
     )
   }
 
+  if (!profile) {
+    return (
+      <div className="px-4 py-6 max-w-2xl mx-auto text-center">
+        <p className="text-gray-400 mb-3">Cliente no encontrado</p>
+        <Button onClick={() => navigate('/owner/customers')}>Volver a clientes</Button>
+      </div>
+    )
+  }
+
   return (
     <div className="px-4 py-6 max-w-2xl mx-auto">
       <button

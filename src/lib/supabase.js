@@ -35,7 +35,7 @@ export const contactService = {
   },
 
   async delete(id) {
-    const { error } = await supabase.from('contacts').delete().eq('id', id)
+    const { error } = await supabase.rpc('delete_contact', { p_contact_id: id })
     if (error) throw error
   },
 

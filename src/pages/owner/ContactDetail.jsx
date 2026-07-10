@@ -276,7 +276,7 @@ export default function ContactDetail() {
       await contactService.delete(contactId)
       navigate(-1)
     } catch (err) {
-      console.error(err)
+      alert(err.message)
     }
   }
 
@@ -314,7 +314,14 @@ export default function ContactDetail() {
     )
   }
 
-  if (!contact) return null
+  if (!contact) {
+    return (
+      <div className="px-4 py-6 max-w-2xl mx-auto text-center">
+        <p className="text-gray-400 mb-3">Contacto no encontrado</p>
+        <Button onClick={() => navigate(-1)}>Volver</Button>
+      </div>
+    )
+  }
 
   return (
     <div className="px-4 py-6 max-w-2xl mx-auto">
