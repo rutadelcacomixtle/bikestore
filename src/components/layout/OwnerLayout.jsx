@@ -1,6 +1,13 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Users, ClipboardList, Package, ShoppingCart, TrendingUp, Truck, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, ClipboardList, Package, ShoppingCart, TrendingUp, Truck } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+
+const getInitials = (name) => {
+  if (!name) return '?'
+  const parts = name.trim().split(/\s+/)
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
+  return name.slice(0, 2).toUpperCase()
+}
 
 const navItems = [
   { to: '/owner/dashboard',   icon: LayoutDashboard, label: 'Inicio'      },
@@ -51,20 +58,22 @@ export function OwnerLayout() {
           ))}
         </nav>
         <button
-          onClick={handleLogout}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-red-600 transition-colors"
+          onClick={() => navigate('/owner/profile')}
+          className="w-8 h-8 rounded-full bg-blue-700 text-white flex items-center justify-center text-sm font-semibold hover:bg-blue-800 transition-colors"
         >
-          <LogOut size={15} />
-          Salir
+          {getInitials(profile?.full_name)}
         </button>
       </header>
 
       {/* Mobile header */}
       <header className="sm:hidden flex items-center justify-between bg-white border-b border-gray-200 px-4 h-12 shrink-0">
         <img src="/logo.png" alt="Bike Store" className="h-7" />
-        <span className="text-xs text-gray-500 truncate max-w-[140px]">
-          {profile?.full_name}
-        </span>
+        <button
+          onClick={() => navigate('/owner/profile')}
+          className="w-7 h-7 rounded-full bg-blue-700 text-white flex items-center justify-center text-xs font-semibold"
+        >
+          {getInitials(profile?.full_name)}
+        </button>
       </header>
 
       {/* Main content */}
@@ -89,11 +98,13 @@ export function OwnerLayout() {
           </NavLink>
         ))}
         <button
-          onClick={handleLogout}
+          onClick={() => navigate('/owner/profile')}
           className="flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-[11px] font-medium text-gray-400"
         >
-          <LogOut size={20} />
-          Salir
+          <div className="w-6 h-6 rounded-full bg-blue-700 text-white flex items-center justify-center text-[10px] font-semibold">
+            {getInitials(profile?.full_name)}
+          </div>
+          Perfil
         </button>
       </nav>
     </div>

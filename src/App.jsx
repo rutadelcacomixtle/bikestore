@@ -15,6 +15,8 @@ import Finance from '@/pages/owner/Finance'
 import Inventory from '@/pages/owner/Inventory'
 import Suppliers from '@/pages/owner/Suppliers'
 import ContactDetail from '@/pages/owner/ContactDetail'
+import OwnerProfile from '@/pages/owner/OwnerProfile'
+import CustomerProfile from '@/pages/customer/CustomerProfile'
 import MyBikes from '@/pages/customer/MyBikes'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -61,6 +63,7 @@ export default function App() {
             <Route path="finance"   element={<Finance />} />
             <Route path="inventory" element={<Inventory />} />
             <Route path="suppliers" element={<Suppliers />} />
+            <Route path="profile" element={<OwnerProfile />} />
           </Route>
 
           {/* Customer */}
@@ -73,6 +76,7 @@ export default function App() {
             }
           >
             <Route index element={<MyBikes />} />
+            <Route path="profile" element={<CustomerProfile />} />
           </Route>
 
           {/* Redirección raíz — espera auth antes de decidir */}

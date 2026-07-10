@@ -1,31 +1,27 @@
 import { Outlet, useNavigate } from 'react-router-dom'
-import { LogOut } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 
-export function CustomerLayout() {
-  const { logout, profile } = useAuth()
-  const navigate = useNavigate()
+const getInitials = (name) => {
+  if (!name) return '?'
+  const parts = name.trim().split(/\s+/)
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
+  return name.slice(0, 2).toUpperCase()
+}
 
-  const handleLogout = async () => {
-    await logout()
-    navigate('/login')
-  }
+export function CustomerLayout() {
+  const { profile } = useAuth()
+  const navigate = useNavigate()
 
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 px-4 h-12 flex items-center justify-between">
         <img src="/logo.png" alt="Bike Store" className="h-7" />
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-500 truncate max-w-[120px]">
-            {profile?.full_name}
-          </span>
-          <button
-            onClick={handleLogout}
-            className="text-gray-400 hover:text-red-600 transition-colors"
-          >
-            <LogOut size={18} />
-          </button>
-        </div>
+        <button
+          onClick={() => navigate('/my-bikes/profile')}
+          className="w-7 h-7 rounded-full bg-blue-700 text-white flex items-center justify-center text-xs font-semibold"
+        >
+          {getInitials(profile?.full_name)}
+        </button>
       </header>
       <main className="px-4 py-6 max-w-xl mx-auto">
         <Outlet />
