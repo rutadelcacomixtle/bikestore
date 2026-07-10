@@ -39,9 +39,8 @@ export function Select({ label, error, value, onChange, options = [], placeholde
           </ListboxButton>
 
           <ListboxOptions
-            anchor="bottom"
             transition
-            className="w-[var(--button-width)] [--anchor-gap:4px] rounded-xl border border-gray-200 bg-white shadow-lg outline-none overflow-hidden origin-top transition duration-100 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 z-50"
+            className="absolute top-full left-0 w-full mt-1 rounded-xl border border-gray-200 bg-white shadow-lg outline-none overflow-hidden origin-top transition duration-100 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 z-50"
           >
             {placeholder && (
               <ListboxOption

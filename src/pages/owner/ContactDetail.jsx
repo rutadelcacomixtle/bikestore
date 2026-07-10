@@ -34,8 +34,20 @@ function BikeForm({ initial = {}, onSave, onCancel, loading }) {
   return (
     <form className="flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); onSave(form) }}>
       <div className="grid grid-cols-2 gap-3">
-        <BrandCombobox label="Marca" value={form.brand} onChange={set('brand')} options={brandNames} required />
-        <BrandCombobox label="Modelo" value={form.model} onChange={set('model')} options={modelOptions} required />
+        <BrandCombobox
+          label="Marca"
+          value={form.brand}
+          onChange={(val) => setForm((p) => ({ ...p, brand: val, model: '' }))}
+          options={brandNames}
+          required
+        />
+        <BrandCombobox
+          label="Modelo"
+          value={form.model}
+          onChange={(val) => setForm((p) => ({ ...p, model: val }))}
+          options={modelOptions}
+          required
+        />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Input label="No. serie" value={form.serial_number} onChange={set('serial_number')} />

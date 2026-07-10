@@ -36,12 +36,10 @@ export default function BrandCombobox({
           <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
             <ChevronDown size={14} className="text-gray-400" />
           </ComboboxButton>
-        </div>
-        <ComboboxOptions
-          anchor="bottom"
-          transition
-          className="w-[var(--button-width)] [--anchor-gap:4px] rounded-xl border border-gray-200 bg-white shadow-lg outline-none overflow-hidden origin-top transition duration-100 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 z-50"
-        >
+          <ComboboxOptions
+            transition
+            className="absolute top-full left-0 w-full mt-1 rounded-xl border border-gray-200 bg-white shadow-lg outline-none overflow-hidden origin-top transition duration-100 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 z-50"
+          >
           {filtered.length === 0 && query !== '' ? (
             <ComboboxOption
               value={query}
@@ -61,8 +59,9 @@ export default function BrandCombobox({
             ))
           )}
         </ComboboxOptions>
-      </Combobox>
+      </div>
       {error && <p className="text-xs text-red-600">{error}</p>}
+    </Combobox>
     </div>
   )
 }
