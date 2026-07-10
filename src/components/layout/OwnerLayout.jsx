@@ -38,7 +38,9 @@ export function OwnerLayout() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header desktop */}
       <header className="hidden sm:flex items-center justify-between bg-white border-b border-gray-200 px-6 h-14 shrink-0">
-        <img src="/logo.png" alt="Bike Store" className="h-8" />
+        <button onClick={() => navigate('/owner/dashboard')}>
+          <img src="/logo.png" alt="Bike Store" className="h-8" />
+        </button>
         <nav className="flex items-center gap-1">
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink
@@ -67,7 +69,9 @@ export function OwnerLayout() {
 
       {/* Mobile header */}
       <header className="sm:hidden flex items-center justify-between bg-white border-b border-gray-200 px-4 h-12 shrink-0">
-        <img src="/logo.png" alt="Bike Store" className="h-7" />
+        <button onClick={() => navigate('/owner/dashboard')}>
+          <img src="/logo.png" alt="Bike Store" className="h-7" />
+        </button>
         <button
           onClick={() => navigate('/owner/profile')}
           className="w-7 h-7 rounded-full bg-blue-700 text-white flex items-center justify-center text-xs font-semibold"
