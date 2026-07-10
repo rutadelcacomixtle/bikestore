@@ -33,14 +33,19 @@ export default function CustomerProfile() {
     setMessage('')
     setSaving(true)
     try {
-      await profileService.update(user.id, {
-        full_name: form.full_name,
-        phone:     form.phone  || null,
-        email:     form.email  || null,
-      })
+      await profileService.updateProfileRpc(
+        user.id,
+        form.full_name,
+        form.phone || null,
+        form.email || null,
+      )
       setMessage('Datos guardados correctamente')
     } catch (err) {
-      setMessage('Error al guardar: ' + err.message)
+      if (err.message?.includes('duplicate key') || err.code === '23505') {
+        setMessage('Este número de teléfono ya está registrado por otro usuario')
+      } else {
+        setMessage('Error al guardar: ' + err.message)
+      }
     } finally {
       setSaving(false)
     }

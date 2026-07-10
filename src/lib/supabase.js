@@ -83,6 +83,16 @@ export const profileService = {
     return data?.[0] ?? null
   },
 
+  async updateProfileRpc(p_id, p_full_name, p_phone, p_email) {
+    const { error } = await supabase.rpc('update_profile', {
+      p_id,
+      p_full_name,
+      p_phone,
+      p_email,
+    })
+    if (error) throw error
+  },
+
   async delete(id) {
     const { error } = await supabase.rpc('delete_profile', { p_profile_id: id })
     if (error) throw error
