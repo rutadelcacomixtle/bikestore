@@ -79,9 +79,8 @@ export const profileService = {
       .update(updates)
       .eq('id', userId)
       .select()
-      .single()
     if (error) throw error
-    return data
+    return data?.[0] ?? null
   },
 
   async delete(id) {
