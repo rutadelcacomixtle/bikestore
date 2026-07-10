@@ -63,9 +63,12 @@ export function AuthProvider({ children }) {
 
     const fullName = data.user?.user_metadata?.full_name ?? ''
 
-    const { error: profileErr } = await supabase
-      .from('profiles')
-      .insert({ id: data.user.id, email, full_name: fullName, role: 'customer' })
+    const { error: profileErr } = await supabase.rpc('create_profile', {
+      p_id: data.user.id,
+      p_email: email,
+      p_full_name: fullName,
+      p_role: 'customer',
+    })
     if (profileErr) throw profileErr
 
     await loadProfile(data.user)
