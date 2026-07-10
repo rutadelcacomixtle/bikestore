@@ -54,11 +54,21 @@ export function AuthProvider({ children }) {
     })
     if (error) throw error
 
+    return data
+  }
+
+  async function verifySignupOtp(email, token) {
+    const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'signup' })
+    if (error) throw error
+
+    const fullName = data.user?.user_metadata?.full_name ?? ''
+
     const { error: profileErr } = await supabase
       .from('profiles')
       .insert({ id: data.user.id, email, full_name: fullName, role: 'customer' })
     if (profileErr) throw profileErr
 
+    await loadProfile(data.user)
     return data
   }
 
@@ -72,7 +82,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, loading, login, register, logout, isOwner, isCustomer }}
+      value={{ user, profile, loading, login, register, verifySignupOtp, logout, isOwner, isCustomer }}
     >
       {children}
     </AuthContext.Provider>
