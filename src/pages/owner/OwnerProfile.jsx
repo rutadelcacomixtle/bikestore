@@ -65,7 +65,7 @@ export default function OwnerProfile() {
 
       <form onSubmit={handleSave} className="flex flex-col gap-3 mb-8">
         <Input label="Nombre completo" value={form.full_name} onChange={set('full_name')} required />
-        <Input label="Teléfono" type="tel" value={form.phone} onChange={set('phone')} readOnly={!!form.phone} tabIndex={form.phone ? -1 : undefined} className={form.phone ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : ''} />
+        <Input label="Teléfono" type="tel" value={form.phone} onChange={set('phone')} readOnly={!!profile?.phone} tabIndex={profile?.phone ? -1 : undefined} className={profile?.phone ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : ''} />
         <Input label="Correo" type="email" value={form.email} readOnly tabIndex={-1} className="bg-gray-50 text-gray-400 cursor-not-allowed" />
 
         {message && (
