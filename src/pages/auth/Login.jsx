@@ -11,6 +11,7 @@ export default function Login() {
   const { login, sendOtp, verifyOtp, completeRegistration, user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const codeRefs = useRef([]);
+  const [mode, setMode] = useState("login");
 
   useEffect(() => {
     if (mode === "register") return;
@@ -21,7 +22,6 @@ export default function Login() {
     }
   }, [user, profile, authLoading, mode]);
 
-  const [mode, setMode] = useState("login");
   const [regStep, setRegStep] = useState("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState(Array(CODE_LENGTH).fill(""));

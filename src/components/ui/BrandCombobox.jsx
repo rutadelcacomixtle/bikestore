@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Combobox } from '@headlessui/react'
+import { Combobox, ComboboxInput, ComboboxButton, ComboboxOptions, ComboboxOption } from '@headlessui/react'
 import { ChevronDown } from 'lucide-react'
 
 export default function BrandCombobox({
