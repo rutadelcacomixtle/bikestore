@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Plus, Bike, Trash2, ClipboardList } from 'lucide-react'
+import { ArrowLeft, Plus, Bike, Trash2, ClipboardList, Pencil } from 'lucide-react'
 import { profileService, bicycleService, workOrderService } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 import { Input, Textarea } from '@/components/ui/Input'
@@ -11,6 +11,27 @@ import BrandCombobox from '@/components/ui/BrandCombobox'
 import brands from '@/data/bikeBrands.json'
 
 const brandNames = Object.keys(brands)
+
+function EditProfileForm({ initial, onSave, onCancel, loading }) {
+  const [form, setForm] = useState({
+    full_name: initial.full_name ?? '',
+    phone:     initial.phone     ?? '',
+    email:     initial.email     ?? '',
+  })
+  const set = (f) => (e) => setForm((p) => ({ ...p, [f]: e.target.value }))
+
+  return (
+    <form className="flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); onSave(form) }}>
+      <Input label="Nombre completo" value={form.full_name} onChange={set('full_name')} required />
+      <Input label="Teléfono" type="tel" value={form.phone} onChange={set('phone')} />
+      <Input label="Correo" type="email" value={form.email} onChange={set('email')} />
+      <div className="flex gap-2 pt-1">
+        <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">Cancelar</Button>
+        <Button type="submit" loading={loading} className="flex-1">Guardar</Button>
+      </div>
+    </form>
+  )
+}
 
 function BikeForm({ initial = {}, onSave, onCancel, loading }) {
   const [form, setForm] = useState({
@@ -72,6 +93,7 @@ export default function CustomerDetail() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
+  const [editModal, setEditModal] = useState(false)
   const [saving, setSaving] = useState(false)
 
   const load = async () => {
@@ -98,6 +120,23 @@ export default function CustomerDetail() {
     try {
       await bicycleService.create({ ...form, customer_id: customerId })
       setModalOpen(false)
+      await load()
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleEditProfile = async (form) => {
+    setSaving(true)
+    try {
+      await profileService.update(customerId, {
+        full_name: form.full_name,
+        phone:     form.phone  || null,
+        email:     form.email  || null,
+      })
+      setEditModal(false)
       await load()
     } catch (err) {
       console.error(err)
@@ -133,10 +172,19 @@ export default function CustomerDetail() {
         <ArrowLeft size={16} /> Volver
       </button>
 
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">{profile?.full_name}</h1>
-        <p className="text-sm text-gray-500">{profile?.email}</p>
-        {profile?.phone && <p className="text-sm text-gray-500">{profile.phone}</p>}
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">{profile?.full_name}</h1>
+          <p className="text-sm text-gray-500">{profile?.email}</p>
+          {profile?.phone && <p className="text-sm text-gray-500">{profile.phone}</p>}
+        </div>
+        <button
+          onClick={() => setEditModal(true)}
+          className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors"
+          title="Editar perfil"
+        >
+          <Pencil size={16} />
+        </button>
       </div>
 
       {/* Bikes */}
@@ -217,6 +265,15 @@ export default function CustomerDetail() {
         <BikeForm
           onSave={handleAddBike}
           onCancel={() => setModalOpen(false)}
+          loading={saving}
+        />
+      </Modal>
+
+      <Modal open={editModal} onClose={() => setEditModal(false)} title="Editar perfil">
+        <EditProfileForm
+          initial={profile}
+          onSave={handleEditProfile}
+          onCancel={() => setEditModal(false)}
           loading={saving}
         />
       </Modal>

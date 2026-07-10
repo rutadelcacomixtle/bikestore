@@ -19,6 +19,12 @@ BEGIN
     SET customer_id = p_profile_id, contact_id = NULL
     WHERE contact_id = p_contact_id;
 
+  UPDATE profiles
+    SET phone = COALESCE(profiles.phone, c.phone),
+        email = COALESCE(profiles.email, c.email)
+    FROM contacts c
+    WHERE profiles.id = p_profile_id AND c.id = p_contact_id;
+
   DELETE FROM contacts WHERE id = p_contact_id;
 END;
 $$;

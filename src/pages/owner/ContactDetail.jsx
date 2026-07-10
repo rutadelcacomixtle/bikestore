@@ -69,7 +69,6 @@ function EditContactForm({ initial, onSave, onCancel, loading }) {
     full_name: initial.full_name ?? '',
     phone:     initial.phone     ?? '',
     email:     initial.email     ?? '',
-    notes:     initial.notes     ?? '',
   })
   const set = (f) => (e) => setForm((p) => ({ ...p, [f]: e.target.value }))
 
@@ -78,7 +77,6 @@ function EditContactForm({ initial, onSave, onCancel, loading }) {
       <Input label="Nombre completo" value={form.full_name} onChange={set('full_name')} required />
       <Input label="Teléfono" type="tel" value={form.phone} onChange={set('phone')} />
       <Input label="Correo" type="email" value={form.email} onChange={set('email')} />
-      <Textarea label="Notas" value={form.notes} onChange={set('notes')} rows={2} />
       <div className="flex gap-2 pt-1">
         <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">Cancelar</Button>
         <Button type="submit" loading={loading} className="flex-1">Guardar</Button>
@@ -262,7 +260,6 @@ export default function ContactDetail() {
         full_name: form.full_name,
         phone:     form.phone  || null,
         email:     form.email  || null,
-        notes:     form.notes  || null,
       })
       setEditModal(false)
       await load()
@@ -337,7 +334,6 @@ export default function ContactDetail() {
           </div>
           {contact.phone && <p className="text-sm text-gray-500">{contact.phone}</p>}
           {contact.email && <p className="text-sm text-gray-500">{contact.email}</p>}
-          {contact.notes && <p className="text-sm text-gray-400 mt-1 italic">{contact.notes}</p>}
         </div>
         <div className="flex gap-1">
           <button
