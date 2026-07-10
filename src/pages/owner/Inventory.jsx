@@ -399,6 +399,7 @@ export default function Inventory() {
   const [loading, setLoading]   = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [saving, setSaving]     = useState(false)
+  const [detailTarget, setDetailTarget] = useState(null)
 
   const { from, to } = getPeriodRange(period)
 
@@ -524,7 +525,7 @@ export default function Inventory() {
             ) : (
               <div className="flex flex-col gap-2">
                 {entries.map((e) => (
-                  <Card key={e.id}>
+                  <Card key={e.id} onClick={() => setDetailTarget(e)}>
                     <CardBody className="flex items-center gap-3 py-2.5">
                       <div className="bg-green-50 text-green-700 rounded-xl p-2 shrink-0">
                         <Package size={16} />
@@ -565,6 +566,56 @@ export default function Inventory() {
           onCancel={() => setModalOpen(false)}
           loading={saving}
         />
+      </Modal>
+
+      <Modal open={!!detailTarget} onClose={() => setDetailTarget(null)} title="Detalle de entrada">
+        {detailTarget && (
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <div className="bg-green-50 text-green-700 rounded-xl p-2.5 shrink-0">
+                <Package size={20} />
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900 text-lg">{detailTarget.product_name}</p>
+                <p className="text-xs text-gray-400">
+                  {new Date(detailTarget.created_at).toLocaleDateString('es-MX', {
+                    day: '2-digit', month: 'long', year: 'numeric',
+                  })}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-lg bg-gray-50 p-3">
+                <p className="text-xs text-gray-400 mb-0.5">Cantidad</p>
+                <p className="font-semibold text-gray-900">{detailTarget.quantity}</p>
+              </div>
+              <div className="rounded-lg bg-gray-50 p-3">
+                <p className="text-xs text-gray-400 mb-0.5">Costo unitario</p>
+                <p className="font-semibold text-gray-900">{fmt(detailTarget.unit_cost)}</p>
+              </div>
+              <div className="rounded-lg bg-gray-50 p-3">
+                <p className="text-xs text-gray-400 mb-0.5">Total</p>
+                <p className="font-semibold text-gray-900">{fmt(detailTarget.total_cost)}</p>
+              </div>
+              <div className="rounded-lg bg-gray-50 p-3">
+                <p className="text-xs text-gray-400 mb-0.5">Proveedor</p>
+                <p className="font-semibold text-gray-900 truncate">{detailTarget.supplier || '—'}</p>
+              </div>
+            </div>
+
+            {detailTarget.notes && (
+              <div className="text-sm">
+                <p className="text-xs text-gray-400 mb-0.5">Notas</p>
+                <p className="text-gray-700 italic">{detailTarget.notes}</p>
+              </div>
+            )}
+
+            <Button variant="secondary" onClick={() => setDetailTarget(null)} className="w-full mt-1">
+              Cerrar
+            </Button>
+          </div>
+        )}
       </Modal>
     </div>
   )

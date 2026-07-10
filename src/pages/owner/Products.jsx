@@ -385,7 +385,7 @@ export default function Products() {
           {filtered.map((p) => {
             const lowStock = p.min_stock > 0 && p.stock <= p.min_stock
             return (
-              <Card key={p.id}>
+              <Card key={p.id} onClick={() => openEdit(p)}>
                 <CardBody className="flex items-center gap-3">
                   <div className={`p-2 rounded-xl shrink-0 ${p.active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
                     <Package size={18} />
@@ -422,19 +422,19 @@ export default function Products() {
                   </div>
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={() => handleToggle(p)}
+                      onClick={(e) => { e.stopPropagation(); handleToggle(p) }}
                       className={`p-2 rounded-lg transition-colors ${p.active ? 'text-green-600 hover:bg-green-50' : 'text-gray-300 hover:bg-gray-100'}`}
                     >
                       {p.active ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
                     </button>
                     <button
-                      onClick={() => openEdit(p)}
+                      onClick={(e) => { e.stopPropagation(); openEdit(p) }}
                       className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors"
                     >
                       <Pencil size={15} />
                     </button>
                     <button
-                      onClick={() => handleDelete(p.id)}
+                      onClick={(e) => { e.stopPropagation(); handleDelete(p.id) }}
                       className="p-2 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
                     >
                       <Trash2 size={15} />

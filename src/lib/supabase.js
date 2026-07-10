@@ -83,6 +83,11 @@ export const profileService = {
     if (error) throw error
     return data
   },
+
+  async delete(id) {
+    const { error } = await supabase.rpc('delete_profile', { p_profile_id: id })
+    if (error) throw error
+  },
 }
 
 // ─── Bicycles ────────────────────────────────────────────────────────────────
@@ -374,6 +379,25 @@ export const salesService = {
     }
 
     return saleData
+  },
+
+  async delete(id) {
+    const { data: items, error: itemsError } = await supabase
+      .from('sale_items')
+      .select('product_id, quantity')
+      .eq('sale_id', id)
+    if (itemsError) throw itemsError
+
+    for (const item of items) {
+      const { error: stockError } = await supabase.rpc('increment_product_stock', {
+        p_product_id: item.product_id,
+        p_quantity:   item.quantity,
+      })
+      if (stockError) throw stockError
+    }
+
+    const { error } = await supabase.from('sales').delete().eq('id', id)
+    if (error) throw error
   },
 }
 

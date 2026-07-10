@@ -128,7 +128,7 @@ export default function Suppliers() {
       ) : (
         <div className="flex flex-col gap-2">
           {suppliers.map((s) => (
-            <Card key={s.id}>
+            <Card key={s.id} onClick={() => openEdit(s)}>
               <CardBody className="flex items-center gap-3">
                 <div className="bg-orange-50 text-orange-600 rounded-xl p-2.5 shrink-0">
                   <Truck size={18} />
@@ -153,13 +153,13 @@ export default function Suppliers() {
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <button
-                    onClick={() => openEdit(s)}
+                    onClick={(e) => { e.stopPropagation(); openEdit(s) }}
                     className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors"
                   >
                     <Pencil size={15} />
                   </button>
                   <button
-                    onClick={() => handleDelete(s)}
+                    onClick={(e) => { e.stopPropagation(); handleDelete(s) }}
                     className="p-2 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
                   >
                     <Trash2 size={15} />

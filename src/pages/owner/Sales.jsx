@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, ShoppingCart, Search, X, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, ShoppingCart, Search, X, Trash2 } from 'lucide-react'
 import { salesService, productService, profileService } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 import { Select, Textarea } from '@/components/ui/Input'
@@ -191,7 +191,8 @@ export default function Sales() {
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [expandedId, setExpandedId] = useState(null)
+  const [detailTarget, setDetailTarget] = useState(null)
+  const [deleting, setDeleting] = useState(false)
 
   const load = async () => {
     setLoading(true)
@@ -227,7 +228,19 @@ export default function Sales() {
     }
   }
 
-  const toggle = (id) => setExpandedId((prev) => (prev === id ? null : id))
+  const handleDelete = async (id) => {
+    if (!confirm('¿Eliminar esta venta? Se restaurará el stock de los productos.')) return
+    setDeleting(true)
+    try {
+      await salesService.delete(id)
+      setDetailTarget(null)
+      await load()
+    } catch (err) {
+      alert(err.message)
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   return (
     <div className="px-4 py-6 max-w-2xl mx-auto">
@@ -250,64 +263,33 @@ export default function Sales() {
       ) : (
         <div className="flex flex-col gap-2">
           {sales.map((sale) => {
-            const expanded = expandedId === sale.id
             const customer = customers.find((c) => c.id === sale.customer_id)
             const itemCount = sale.sale_items?.length ?? 0
             return (
-              <Card key={sale.id}>
-                <CardBody className="flex flex-col">
-                  <button
-                    type="button"
-                    className="flex items-center gap-3 w-full text-left"
-                    onClick={() => toggle(sale.id)}
-                  >
-                    <div className="p-2 rounded-xl bg-blue-50 text-blue-700 shrink-0">
-                      <ShoppingCart size={18} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-semibold text-gray-900">
-                          ${sale.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-                        </p>
-                        <Badge color={PAYMENT_COLOR[sale.payment_method] ?? 'gray'}>
-                          {PAYMENT_LABEL[sale.payment_method] ?? sale.payment_method}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-gray-400 truncate">
-                        {customer?.full_name ?? 'Cliente no registrado'}
-                        {' · '}
-                        {itemCount} producto{itemCount !== 1 ? 's' : ''}
-                        {' · '}
-                        {new Date(sale.created_at).toLocaleDateString('es-MX', {
-                          day: '2-digit', month: 'short', year: 'numeric',
-                        })}
+              <Card key={sale.id} onClick={() => setDetailTarget(sale)}>
+                <CardBody className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-blue-50 text-blue-700 shrink-0">
+                    <ShoppingCart size={18} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-gray-900">
+                        ${sale.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                       </p>
+                      <Badge color={PAYMENT_COLOR[sale.payment_method] ?? 'gray'}>
+                        {PAYMENT_LABEL[sale.payment_method] ?? sale.payment_method}
+                      </Badge>
                     </div>
-                    {expanded
-                      ? <ChevronUp size={16} className="text-gray-400 shrink-0" />
-                      : <ChevronDown size={16} className="text-gray-400 shrink-0" />
-                    }
-                  </button>
-
-                  {expanded && itemCount > 0 && (
-                    <div className="mt-3 pt-3 border-t border-gray-100 flex flex-col gap-1.5">
-                      {sale.sale_items.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between text-sm">
-                          <span className="text-gray-700 truncate flex-1">{item.product_name}</span>
-                          <span className="text-gray-500 shrink-0 ml-3">
-                            {item.quantity} × ${item.unit_price.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-                            {' = '}
-                            <span className="font-medium text-gray-800">
-                              ${item.subtotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-                            </span>
-                          </span>
-                        </div>
-                      ))}
-                      {sale.notes && (
-                        <p className="text-xs text-gray-400 italic mt-1">{sale.notes}</p>
-                      )}
-                    </div>
-                  )}
+                    <p className="text-xs text-gray-400 truncate">
+                      {customer?.full_name ?? 'Cliente no registrado'}
+                      {' · '}
+                      {itemCount} producto{itemCount !== 1 ? 's' : ''}
+                      {' · '}
+                      {new Date(sale.created_at).toLocaleDateString('es-MX', {
+                        day: '2-digit', month: 'short', year: 'numeric',
+                      })}
+                    </p>
+                  </div>
                 </CardBody>
               </Card>
             )
@@ -323,6 +305,49 @@ export default function Sales() {
           onCancel={() => setModalOpen(false)}
           loading={saving}
         />
+      </Modal>
+
+      <Modal open={!!detailTarget} onClose={() => setDetailTarget(null)} title="Detalle de venta">
+        {detailTarget && (
+          <div className="flex flex-col gap-4">
+            <div>
+              <p className="text-2xl font-bold text-gray-900 mb-1">
+                ${detailTarget.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+              </p>
+              <Badge color={PAYMENT_COLOR[detailTarget.payment_method] ?? 'gray'}>
+                {PAYMENT_LABEL[detailTarget.payment_method] ?? detailTarget.payment_method}
+              </Badge>
+            </div>
+            <div className="text-sm text-gray-500">
+              <p>{customers.find((c) => c.id === detailTarget.customer_id)?.full_name ?? 'Cliente no registrado'}</p>
+              <p>{new Date(detailTarget.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+            </div>
+            {detailTarget.notes && <p className="text-sm text-gray-500 italic">{detailTarget.notes}</p>}
+
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Productos</p>
+              <div className="flex flex-col gap-1.5">
+                {detailTarget.sale_items?.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between text-sm">
+                    <span className="text-gray-700 truncate flex-1">{item.product_name}</span>
+                    <span className="text-gray-500 shrink-0 ml-3">
+                      {item.quantity} × ${item.unit_price.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                      {' = '}
+                      <span className="font-medium text-gray-800">${item.subtotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2 border-t border-gray-100">
+              <Button variant="secondary" onClick={() => setDetailTarget(null)} className="flex-1">Cerrar</Button>
+              <Button variant="danger" onClick={() => handleDelete(detailTarget.id)} loading={deleting} className="flex-1">
+                <Trash2 size={14} /> Eliminar
+              </Button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   )

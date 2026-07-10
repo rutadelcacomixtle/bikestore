@@ -145,6 +145,8 @@ export default function CustomerDetail() {
     }
   }
 
+  const [deleting, setDeleting] = useState(false)
+
   const handleDeleteBike = async (id) => {
     if (!confirm('¿Eliminar esta bicicleta?')) return
     try {
@@ -152,6 +154,19 @@ export default function CustomerDetail() {
       await load()
     } catch (err) {
       alert(err.message)
+    }
+  }
+
+  const handleDeleteProfile = async () => {
+    if (!confirm('¿Eliminar este cliente? Las órdenes de trabajo y bicicletas quedarán sin asignar. Esta acción no se puede deshacer.')) return
+    setDeleting(true)
+    try {
+      await profileService.delete(customerId)
+      navigate('/owner/customers')
+    } catch (err) {
+      alert(err.message)
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -260,6 +275,18 @@ export default function CustomerDetail() {
           </div>
         )}
       </section>
+
+      {/* Delete profile */}
+      <div className="mt-8 pt-6 border-t border-gray-100">
+        <button
+          onClick={handleDeleteProfile}
+          disabled={deleting}
+          className="flex items-center gap-2 text-sm text-red-600 hover:text-red-700 transition-colors disabled:opacity-50"
+        >
+          <Trash2 size={16} />
+          Eliminar cliente
+        </button>
+      </div>
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Nueva bicicleta">
         <BikeForm
